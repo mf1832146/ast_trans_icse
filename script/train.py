@@ -125,12 +125,12 @@ def training(local_rank, config=None, **kwargs):
                                             output_transform=lambda x, y, y_pred:
                                             bleu_output_transform((y_pred, y), config.tgt_vocab.i2w))
 
-    timer = Timer(average=True)
-    timer.attach(trainer,
-                 start=Events.EPOCH_STARTED,
-                 resume=Events.EPOCH_COMPLETED,
-                 pause=Events.EPOCH_COMPLETED,
-                 step=Events.EPOCH_COMPLETED)
+    # timer = Timer(average=True)
+    # timer.attach(trainer,
+    #              start=Events.EPOCH_STARTED,
+    #              resume=Events.EPOCH_COMPLETED,
+    #              pause=Events.EPOCH_COMPLETED,
+    #              step=Events.EPOCH_COMPLETED)
 
     @trainer.on(Events.EPOCH_COMPLETED(every=getattr(config, 'val_interval', 1)) | Events.COMPLETED)
     def run_validation():
@@ -157,9 +157,8 @@ def training(local_rank, config=None, **kwargs):
     )
 
     if idist.get_rank() == 0:
-        if config.fast_mod:
+        if not config.fast_mod:
             ProgressBar(persist=True).attach(trainer, output_transform=lambda x: {"batch loss": x})
-        else:
             if 'tensorboard' in config.logger:
                 tb_logger = common.setup_tb_logging(
                     config.output_path.as_posix(),
