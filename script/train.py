@@ -4,7 +4,7 @@ import torch.optim
 from ignite.contrib.handlers import tensorboard_logger, clearml_logger, ProgressBar, FastaiLRFinder, \
     create_lr_scheduler_with_warmup
 from ignite.engine import create_supervised_trainer, create_supervised_evaluator, Events
-from ignite.handlers import global_step_from_engine
+from ignite.handlers import global_step_from_engine, Timer
 from ignite.utils import setup_logger, convert_tensor
 from ignite.contrib.engines import common
 import numpy as np
@@ -124,6 +124,13 @@ def training(local_rank, config=None, **kwargs):
                                             prepare_batch=_graph_prepare_batch,
                                             output_transform=lambda x, y, y_pred:
                                             bleu_output_transform((y_pred, y), config.tgt_vocab.i2w))
+
+    timer = Timer(average=True)
+    timer.attach(trainer,
+                 start=Events.EPOCH_STARTED,
+                 resume=Events.EPOCH_COMPLETED,
+                 pause=Events.EPOCH_COMPLETED,
+                 step=Events.EPOCH_COMPLETED)
 
     @trainer.on(Events.EPOCH_COMPLETED(every=getattr(config, 'val_interval', 1)) | Events.COMPLETED)
     def run_validation():
