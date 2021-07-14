@@ -131,16 +131,6 @@ def training(local_rank, config=None, **kwargs):
         states = evaluator.run(valid_loader)
         log_metrics(logger, epoch, states.times['COMPLETED'], 'Test', states.metrics)
 
-        common.save_best_model_by_val_score(
-            config.output_path.as_posix(),
-            evaluator,
-            model=model,
-            metric_name='bleu',
-            n_saved=1,
-            trainer=trainer,
-            tag='val'
-        )
-
     # warm up
     # torch_lr_scheduler = ExponentialLR(optimizer=optimizer, gamma=0.98)
     # scheduler = create_lr_scheduler_with_warmup(torch_lr_scheduler,
@@ -149,6 +139,15 @@ def training(local_rank, config=None, **kwargs):
     #
     # # Attach to the trainer
     # trainer.add_event_handler(Events.ITERATION_STARTED, scheduler)
+    common.save_best_model_by_val_score(
+        config.output_path.as_posix(),
+        evaluator,
+        model=model,
+        metric_name='bleu',
+        n_saved=1,
+        trainer=trainer,
+        tag='val'
+    )
 
     if idist.get_rank() == 0:
         if config.fast_mod:
