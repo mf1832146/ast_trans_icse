@@ -6,8 +6,6 @@ from collections import Counter
 
 from tqdm import tqdm
 
-from dataset import clean_nl
-
 PAD = 0
 UNK = 1
 BOS = 2
@@ -46,7 +44,7 @@ class Vocab(object):
     def normalize(token):
         return unicodedata.normalize('NFD', token)
 
-    def __len__(self):
+    def size(self):
         return len(self.w2i)
 
     def add(self, token):
@@ -80,13 +78,13 @@ class Vocab(object):
 
 def load_vocab(data_dir, is_split):
     log.info(f'load vocab from {data_dir}, is_split = {is_split}')
-    split_str = '/split_vocab/' if is_split else '/un_split_vocab/'
+    split_str = 'split_ast_vocab.pkl' if is_split else 'un_split_ast_vocab.pkl'
     ast_vocab = Vocab(need_bos=False,
-                      file_path=data_dir + split_str + 'ast_vocab.pkl')
+                      file_path=data_dir + '/vocab/' + split_str)
     ast_vocab.load()
-    code_vocab = Vocab(need_bos=False, file_path=data_dir + split_str + 'code_vocab.pkl')
+    code_vocab = Vocab(need_bos=False, file_path=data_dir + '/vocab/' + 'code_vocab.pkl')
     code_vocab.load()
-    nl_vocab = Vocab(need_bos=True, file_path=data_dir + split_str + 'nl_vocab.pkl')
+    nl_vocab = Vocab(need_bos=True, file_path=data_dir + '/vocab/' + 'nl_vocab.pkl')
     nl_vocab.load()
     return ast_vocab, code_vocab, nl_vocab
 

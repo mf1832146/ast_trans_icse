@@ -14,7 +14,7 @@ import threading
 import psutil
 
 # Assumes meteor-1.5.jar is in the same directory as meteor.py.  Change as needed.
-METEOR_JAR = "meteor-1.5.jar"
+METEOR_JAR = 'meteor-1.5.jar'
 
 
 def enc(s):
@@ -73,7 +73,6 @@ class Meteor:
         with self.lock:
             for i in imgIds:
                 assert (len(res[i]) == 1)
-                print(res[i][0])
                 stat = self._stat(res[i][0], gts[i])
                 eval_line += ' ||| {}'.format(stat)
 

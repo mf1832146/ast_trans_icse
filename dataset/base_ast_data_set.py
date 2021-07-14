@@ -6,7 +6,7 @@ import wordninja
 import string
 from torch.autograd import Variable
 from torch_geometric.data.dataloader import Collater
-
+from tqdm import tqdm
 from utils import PAD, UNK
 from torch.utils.data.dataset import T_co
 punc = string.punctuation
@@ -15,33 +15,34 @@ __all__ = ['BaseASTDataSet', 'clean_nl', 'subsequent_mask', 'make_std_mask', 'ge
 
 
 def get_data_set(config):
-    train_data_set = config.data_set(config.data_dir, config.max_src_len, config.max_tgt_len,
-                                     config.max_rel_pos, config.is_ignore, 'train', config.src_vocab, config.tgt_vocab)
-    eval_data_set = config.data_set(config.data_dir, config.max_src_len, config.max_tgt_len,
-                                    config.max_rel_pos, config.is_ignore, 'dev', config.src_vocab, config.tgt_vocab)
+    train_data_set = config.data_set(config, 'train')
+    eval_data_set = config.data_set(config, 'dev')
 
     return train_data_set, eval_data_set
 
 
 class BaseASTDataSet(data.Dataset):
-    def __init__(self,  data_dir, max_ast_size, max_nl_len, max_rel_pos, is_ignore, data_set_name, ast_vocab, nl_vocab):
+    def __init__(self, config, data_set_name):
         super(BaseASTDataSet, self).__init__()
         self.data_set_name = data_set_name
         print('loading ' + data_set_name + ' data...')
-        data_dir = data_dir + '/' + data_set_name + '/'
+        data_dir = config.data_dir + '/' + data_set_name + '/'
 
-        self.ignore_more_than_k = is_ignore
-        self.max_rel_pos = max_rel_pos
-        self.max_ast_size = max_ast_size
-        self.max_nl_len = max_nl_len
+        self.ignore_more_than_k = config.is_ignore
+        self.max_rel_pos = config.max_rel_pos
+        self.max_src_len = config.max_src_len
+        self.max_tgt_len = config.max_tgt_len
 
-        self.ast_data = self.load_ast(data_dir + 'root_first.seq')
+        ast_path = data_dir + 'split_pot.seq' if config.is_split else 'un_split_sbt.seq'
+        matrices_path = data_dir + 'split_matrices.npz' if config.is_split else 'un_split_matrices.npz'
+
+        self.ast_data = self.load_ast(ast_path)
         self.nl_data = self.load_nl(data_dir + 'nl.original')
-        self.matrices_data = self.load_matrices(data_dir + 'matrices.npz')
+        self.matrices_data = self.load_matrices(matrices_path)
 
         self.data_set_len = len(self.ast_data)
-        self.ast_vocab = ast_vocab
-        self.nl_vocab = nl_vocab
+        self.src_vocab = config.src_vocab
+        self.tgt_vocab = config.tgt_vocab
         self.collector = Collater([], [])
 
     def collect_fn(self, batch):
@@ -53,27 +54,28 @@ class BaseASTDataSet(data.Dataset):
     def __getitem__(self, index) -> T_co:
         pass
 
+    @staticmethod
+    def word2tensor(seq, max_seq_len, vocab):
+        seq_vec = [vocab.w2i[x] if x in vocab.w2i else UNK for x in seq]
+        seq_vec = seq_vec + [PAD for i in range(max_seq_len - len(seq_vec))]
+        seq_vec = torch.tensor(seq_vec, dtype=torch.long)
+        return seq_vec
+
     def convert_ast_to_tensor(self, ast_seq):
-        ast_seq = ast_seq[:self.max_ast_size]
-        ast_vec = [self.ast_vocab.w2i[x] if x in self.ast_vocab.w2i else UNK for x in ast_seq]
-        ast_vec = ast_vec + [PAD for i in range(self.max_ast_size - len(ast_vec))]
-        ast_vec = torch.tensor(ast_vec, dtype=torch.long)
-        return ast_vec
+        ast_seq = ast_seq[:self.max_src_len]
+        return self.word2tensor(ast_seq, self.max_src_len, self.src_vocab)
 
     def convert_nl_to_tensor(self, nl):
-        nl = nl[:self.max_nl_len - 2]
+        nl = nl[:self.max_tgt_len - 2]
         nl = ['<s>'] + nl + ['</s>']
-        nl_vec = [self.nl_vocab.w2i[x] if x in self.nl_vocab.w2i else UNK for x in nl]
-        nl_vec = nl_vec + [PAD for i in range(self.max_nl_len - len(nl_vec))]
-        nl_vec = torch.tensor(nl_vec, dtype=torch.long)
-        return nl_vec
+        return self.word2tensor(nl, self.max_tgt_len, self.tgt_vocab)
 
     @staticmethod
     def load_ast(file_path):
         _data = []
         print('loading asts...')
         with open(file_path, 'r') as f:
-            for line in f.readlines():
+            for line in tqdm(f.readlines()):
                 _data.append(eval(line))
         return _data
 
@@ -88,12 +90,8 @@ class BaseASTDataSet(data.Dataset):
         data_ = []
         print('loading nls...')
         with open(file_path, 'r') as f:
-            for line in f.readlines():
-                nl_ = clean_nl(line)
-                if len(nl_) >= 2:
-                    data_.append(nl_)
-                else:
-                    data_.append(line.split())
+            for line in tqdm(f.readlines()):
+                data_.append(line.split())
         return data_
 
 

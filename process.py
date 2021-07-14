@@ -34,8 +34,11 @@ def skip_code_and_nl_with_skip_id(data_dir, output_dir, is_skipped):
 
     with open(output_dir + 'nl.original', 'w') as f:
         for index, nl in tqdm(enumerate(nls), desc='skip nl'):
-            nl = nl + '\n' if index < data_size-1 else nl
-            f.write(' '.join(clean_nl(nl)))
+            nl = clean_nl(nl)
+            nl = ' '.join(nl)
+            if index < data_size-1:
+                nl = nl + '\n'
+            f.write(nl)
 
     with open(output_dir + 'code.seq', 'w') as f:
         for index, code in tqdm(enumerate(codes), desc='skip code'):
@@ -57,12 +60,12 @@ def process(data_dir, max_len, output_path):
 
     root_list = MyAst.process_ast(asts, split_leaf=False, max_size=max_len)
 
-    MyAst.collect_matrices_and_save(root_list, output_path + 'un_split_matrices.npz', 'un_split_pot.seq')
+    MyAst.collect_matrices_and_save(root_list, output_path + 'un_split_matrices.npz', output_path + 'un_split_pot.seq')
     MyAst.collect_seq_and_save(root_list, output_path + 'un_split_sbt.seq', 'sbt')
 
     root_list = MyAst.process_ast(asts, split_leaf=True, max_size=max_len)
 
-    MyAst.collect_matrices_and_save(root_list, output_path + 'split_matrices.npz', 'split_pot.seq')
+    MyAst.collect_matrices_and_save(root_list, output_path + 'split_matrices.npz', output_path + 'split_pot.seq')
     MyAst.collect_seq_and_save(root_list, output_path + 'split_sbt.seq', 'sbt')
 
     # skip code, nl with is_skipped
