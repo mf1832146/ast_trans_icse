@@ -1,24 +1,17 @@
 import ignite.distributed as idist
 import math
 import torch.optim
-from ignite.contrib.handlers import tensorboard_logger, clearml_logger, ProgressBar, FastaiLRFinder, \
-    create_lr_scheduler_with_warmup
+from ignite.contrib.handlers import tensorboard_logger, clearml_logger, ProgressBar
 from ignite.engine import create_supervised_trainer, create_supervised_evaluator, Events
-from ignite.handlers import global_step_from_engine, Timer
 from ignite.utils import setup_logger, convert_tensor
 from ignite.contrib.engines import common
-import numpy as np
 import json
 from py_config_runner.utils import set_seed
 from pathlib import Path
-from clearml import Task
 from pytorch_pretrained_bert import BertAdam
-from torch.optim.lr_scheduler import ExponentialLR
 from torch.utils.data import DataLoader
 import os
-
 from tqdm import tqdm
-
 from config import get_model
 from dataset import get_data_set
 from module.greedy_generator import GreedyGenerator
@@ -102,10 +95,12 @@ def training(local_rank, config=None, **kwargs):
     logger = kwargs['logger']
     hype_params = kwargs['hype_params']
     if idist.get_rank() == 0:
-        task = Task.init(project_name=config.project_name,
-                         task_name=config.task_name + params2str(hype_params))
-        task.connect_configuration(config.config_filepath.as_posix())
-        exp_tracking.log_params(config.__dict__)
+        if config.use_clearml:
+            from clearml import Task
+            task = Task.init(project_name=config.project_name,
+                             task_name=config.task_name + params2str(hype_params))
+            task.connect_configuration(config.config_filepath.as_posix())
+            exp_tracking.log_params(config.__dict__)
 
     logger.info('Hype-Params: ' + params2str(hype_params))
     set_seed(config.seed + local_rank)
@@ -189,21 +184,6 @@ def training(local_rank, config=None, **kwargs):
                 )
 
     trainer.run(train_loader, max_epochs=config.num_epochs)
-    # lr_finder = FastaiLRFinder()
-    # to_save = {'model': model, 'optimizer': optimizer}
-    # with lr_finder.attach(trainer, to_save, diverge_th=1.5) as trainer_with_lr_finder:
-    #     trainer_with_lr_finder.run(train_loader)
-
-    # if idist.get_rank() == 0:
-    #     from matplotlib import pyplot as plt
-    #     ax = lr_finder.plot()
-    #     plt.show()
-    #
-    #     logger.info("Suggested LR " + str(lr_finder.lr_suggestion()))
-
-    # trainer.run(train_loader, max_epochs=config.num_epochs)
-    # global valid_bleu
-    # valid_bleu = evaluator.state.metrics['bleu']
 
     test(local_rank, config, logger)
 
@@ -219,6 +199,7 @@ def training(local_rank, config=None, **kwargs):
 
 def test(local_rank, config, logger):
     if local_rank == 0:
+        torch.cuda.empty_cache()
         output_path = config.output_path.as_posix()
         load_epoch_path = ''
         for file in os.listdir(output_path):
@@ -289,20 +270,21 @@ def run(config, hype_params=None):
 
     logger = setup_logger(name='AST Transformer Training', distributed_rank=idist.get_rank())
 
-    config.output_path = Path(exp_tracking.get_output_path())
     config.output_path_str = config.output_path.as_posix()
-
-    if config.multi_gpu:
-        with idist.Parallel(backend="nccl", master_port=2224) as parallel:
-            try:
-                parallel.run(training, config, logger=logger, hype_params=hype_params)
-            except KeyboardInterrupt:
-                logger.info("Catched KeyboardInterrupt -> exit")
-            except Exception as e:  # noqa
-                logger.exception("")
-                raise e
+    if config.is_test:
+        if config.multi_gpu:
+            with idist.Parallel(backend="nccl", master_port=2224) as parallel:
+                try:
+                    parallel.run(training, config, logger=logger, hype_params=hype_params)
+                except KeyboardInterrupt:
+                    logger.info("Catched KeyboardInterrupt -> exit")
+                except Exception as e:  # noqa
+                    logger.exception("")
+                    raise e
+        else:
+            training(0, config, logger=logger, hype_params=hype_params)
     else:
-        training(0, config, logger=logger, hype_params=hype_params)
+        test(0, config, logger=logger)
 
 
 

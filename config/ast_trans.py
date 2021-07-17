@@ -6,6 +6,7 @@ from module import FastASTTrans
 import os
 from utils import LabelSmoothing, PAD
 
+use_clearml = True
 project_name = 'ast_trans_fast'
 task_name = 'ast_trans_fast'
 
@@ -43,7 +44,8 @@ dropout = 0.2
 batch_size = 32
 num_epochs = 500
 num_threads = 0
-output_path = Path('./checkpoint/ast_trans/' + datetime.now().strftime("%Y%m%d-%H%M%S"))
+#output_path = Path('./checkpoint/ast_trans/' + datetime.now().strftime("%Y%m%d-%H%M%S"))
+output_path = Path('/home/tangze/ast_trans_6_30/clearml/clearml/20210717-001432')
 config_filepath = Path('./config/ast_trans.py')
 es_patience = 20
 load_epoch_path = ''
