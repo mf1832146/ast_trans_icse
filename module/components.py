@@ -4,6 +4,7 @@ import torch
 import math
 from torch.autograd import Variable
 import torch.nn.functional as F
+from torch.nn import Parameter
 from torch.nn.modules.transformer import _get_activation_fn
 
 __all__ = ['_get_clones', 'FeedForward', 'Embeddings',
@@ -233,19 +234,20 @@ class Generator(nn.Module):
         super(Generator, self).__init__()
         self.soft_max = nn.Softmax(-1)
         self.dropout = nn.Dropout(dropout)
-        linear = nn.Linear(hidden_size, tgt_vocab_size)
+        self.linear = nn.Linear(hidden_size, tgt_vocab_size)
+        self.share_emb_weights = share_emb_weights
         if share_emb_weights is not None:
-            linear.weight = share_emb_weights.transpose()
-
-        self.p_vocab = nn.Sequential(
-            linear,
-            self.dropout,
-            self.soft_max
-        )
+            self.bias = Parameter(torch.empty(tgt_vocab_size))
+        else:
+            self.linear = nn.Linear(hidden_size, tgt_vocab_size)
 
     def forward(self, outputs):
-        gen_prob = self.p_vocab(outputs)
+        if self.share_emb_weights is not None:
+            out = F.linear(outputs, self.weight.t(), self.bias)
+        else:
+            out = self.linear(outputs)
 
+        gen_prob = self.soft_max(self.dropout(out))
         return torch.log(gen_prob)
 
 
