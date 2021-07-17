@@ -93,6 +93,7 @@ def get_data_loader(config, is_train, data_set):
 
 def training(local_rank, config=None, **kwargs):
     logger = kwargs['logger']
+    hype_params = kwargs['hype_params']
     if idist.get_rank() == 0:
         if config.use_clearml:
             from clearml import Task
@@ -132,14 +133,6 @@ def training(local_rank, config=None, **kwargs):
         states = evaluator.run(valid_loader)
         log_metrics(logger, epoch, states.times['COMPLETED'], 'Test', states.metrics)
 
-    # warm up
-    # torch_lr_scheduler = ExponentialLR(optimizer=optimizer, gamma=0.98)
-    # scheduler = create_lr_scheduler_with_warmup(torch_lr_scheduler,
-    #                                             warmup_start_value=1e-5,
-    #                                             warmup_duration=2000)
-    #
-    # # Attach to the trainer
-    # trainer.add_event_handler(Events.ITERATION_STARTED, scheduler)
     common.save_best_model_by_val_score(
         config.output_path.as_posix(),
         evaluator,
@@ -149,6 +142,11 @@ def training(local_rank, config=None, **kwargs):
         trainer=trainer,
         tag='val'
     )
+
+    common.add_early_stopping_by_val_score(patience=4,
+                                           evaluator=evaluator,
+                                           trainer=trainer,
+                                           metric_name='bleu')
 
     if idist.get_rank() == 0:
         ProgressBar(persist=True).attach(trainer, output_transform=lambda x: {"batch loss": x})
@@ -186,6 +184,9 @@ def training(local_rank, config=None, **kwargs):
 
     trainer.run(train_loader, max_epochs=config.num_epochs)
 
+    global valid_bleu
+    valid_bleu = evaluator.state.metrics['bleu']
+
     test(local_rank, config, logger)
 
     if idist.get_rank() == 0 and not config.fast_mod:
@@ -193,6 +194,7 @@ def training(local_rank, config=None, **kwargs):
             task.close()
         if not config.fast_mod:
             if 'tensorboard' in config.logger:
+                tb_logger.writer.add_hparams(hype_params, {'hparam/test_accuracy': valid_bleu})
                 tb_logger.close()
             if 'clear_ml' in config.logger:
                 exp_tracking_logger.close()
@@ -283,16 +285,19 @@ def run(config, hype_params=None):
         if config.multi_gpu:
             with idist.Parallel(backend="nccl", master_port=2224) as parallel:
                 try:
-                    parallel.run(training, config, logger=logger)
+                    parallel.run(training, config, logger=logger, hype_params=hype_params)
                 except KeyboardInterrupt:
                     logger.info("Catched KeyboardInterrupt -> exit")
                 except Exception as e:  # noqa
                     logger.exception("")
                     raise e
         else:
-            training(0, config, logger=logger)
+            training(0, config, logger=logger, hype_params=hype_params)
     else:
         test(0, config, logger=logger)
+
+    global valid_bleu
+    return valid_bleu
 
 
 

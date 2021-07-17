@@ -16,10 +16,27 @@ if __name__ == '__main__':
 
     config = ConfigObject(args.config)
     if args.use_hype_params:
-        # optimize(parameters=config.hype_parameters,
-        #          evaluation_function=lambda params: run(config, params),
-        #          objective_name='bleu')
-        run(config, config.hype_parameters)
+        config.hype_parameters = [
+            {
+                "name": "max_rel_pos",
+                "type": "choice",
+                "values": [1, 3, 5, 7]
+            },
+            {
+                "name": "par_heads",
+                "type": "range",
+                "bounds": [0, 8]
+            },
+            {
+                "name": "num_layers",
+                "type": "choice",
+                "values": [2, 4, 6]
+            }
+        ]
+        optimize(parameters=config.hype_parameters,
+                 evaluation_function=lambda params: run(config, params),
+                 objective_name='bleu')
+        # run(config, config.hype_parameters)
     else:
         run(config)
 

@@ -14,7 +14,7 @@ seed = 2021
 # data
 data_dir = '../data_set/processed/java'
 max_tgt_len = 30
-max_src_len = 200
+max_src_len = 150
 data_type = 'ast'
 
 is_split = True

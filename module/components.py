@@ -229,13 +229,16 @@ def transpose_for_scores(x, num_heads):
 
 
 class Generator(nn.Module):
-    def __init__(self, tgt_vocab_size, hidden_size, dropout):
+    def __init__(self, tgt_vocab_size, hidden_size, dropout, share_emb_weights=None):
         super(Generator, self).__init__()
         self.soft_max = nn.Softmax(-1)
         self.dropout = nn.Dropout(dropout)
+        linear = nn.Linear(hidden_size, tgt_vocab_size)
+        if share_emb_weights is not None:
+            linear.weight = share_emb_weights.transpose()
 
         self.p_vocab = nn.Sequential(
-            nn.Linear(hidden_size, tgt_vocab_size),
+            linear,
             self.dropout,
             self.soft_max
         )

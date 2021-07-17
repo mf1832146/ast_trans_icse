@@ -4,7 +4,7 @@ import torch.nn as nn
 from dataset import make_std_mask
 from module import Embeddings, _get_clones, FastRelEmbeddings, FeedForward, SublayerConnection
 from module.components import DecoderLayer, BaseDecoder, Generator, process_data
-from module.fast_attn import FastMultiHeadedAttention
+from module.attn import FastMultiHeadedAttention
 from utils import PAD
 
 
@@ -32,7 +32,8 @@ class FastASTTrans(nn.Module):
 
         decoder_layer = DecoderLayer(hidden_size, self.num_heads, dim_feed_forward, dropout, activation="gelu")
         self.decoder = BaseDecoder(decoder_layer, num_layers, norm=nn.LayerNorm(hidden_size))
-        self.generator = Generator(tgt_vocab_size, hidden_size, dropout)
+        self.generator = Generator(tgt_vocab_size, hidden_size, dropout,
+                                   share_emb_weights=self.tgt_embedding.word_embeddings.weight)
 
         print('Init or load model.')
         if state_dict is None:
