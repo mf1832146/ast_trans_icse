@@ -230,7 +230,7 @@ def test(local_rank, config, logger):
 
         test_data_set = config.data_set(config, 'test')
         test_loader = DataLoader(dataset=test_data_set,
-                                 batch_size=config.batch_size,
+                                 batch_size=config.batch_size // len(config.g.split(',')),
                                  shuffle=False,
                                  collate_fn=test_data_set.collect_fn)
 
