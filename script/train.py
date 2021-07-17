@@ -1,7 +1,7 @@
 import ignite.distributed as idist
 import math
 import torch.optim
-from ignite.contrib.handlers import tensorboard_logger, clearml_logger, ProgressBar
+from ignite.contrib.handlers import ProgressBar
 from ignite.engine import create_supervised_trainer, create_supervised_evaluator, Events
 from ignite.utils import setup_logger, convert_tensor
 from ignite.contrib.engines import common
@@ -15,7 +15,7 @@ from tqdm import tqdm
 from config import get_model
 from dataset import get_data_set
 from module.greedy_generator import GreedyGenerator
-from utils import exp_tracking, load_vocab
+from utils import load_vocab
 from valid_metrices.bleu_metrice import BLEU4, bleu_output_transform, TotalMetric
 
 __all__ = ['run']
@@ -93,16 +93,15 @@ def get_data_loader(config, is_train, data_set):
 
 def training(local_rank, config=None, **kwargs):
     logger = kwargs['logger']
-    hype_params = kwargs['hype_params']
     if idist.get_rank() == 0:
         if config.use_clearml:
             from clearml import Task
+            from utils import exp_tracking
             task = Task.init(project_name=config.project_name,
-                             task_name=config.task_name + params2str(hype_params))
+                             task_name=config.task_name)
             task.connect_configuration(config.config_filepath.as_posix())
             exp_tracking.log_params(config.__dict__)
 
-    logger.info('Hype-Params: ' + params2str(hype_params))
     set_seed(config.seed + local_rank)
     train_data_set, eval_data_set = get_dataflow(config)
     train_loader = get_data_loader(config, is_train=True, data_set=train_data_set)
@@ -152,9 +151,10 @@ def training(local_rank, config=None, **kwargs):
     )
 
     if idist.get_rank() == 0:
+        ProgressBar(persist=True).attach(trainer, output_transform=lambda x: {"batch loss": x})
         if not config.fast_mod:
-            ProgressBar(persist=True).attach(trainer, output_transform=lambda x: {"batch loss": x})
             if 'tensorboard' in config.logger:
+                from ignite.contrib.handlers import tensorboard_logger
                 tb_logger = common.setup_tb_logging(
                     config.output_path.as_posix(),
                     trainer,
@@ -171,6 +171,7 @@ def training(local_rank, config=None, **kwargs):
                 )
 
             if 'clear_ml' in config.logger:
+                from ignite.contrib.handlers import clearml_logger
                 exp_tracking_logger = exp_tracking.setup_logging(
                     trainer, optimizer, evaluators={"validation": evaluator}
                 )
@@ -188,10 +189,10 @@ def training(local_rank, config=None, **kwargs):
     test(local_rank, config, logger)
 
     if idist.get_rank() == 0 and not config.fast_mod:
-        task.close()
+        if config.use_clearml:
+            task.close()
         if not config.fast_mod:
             if 'tensorboard' in config.logger:
-                # tb_logger.writer.add_hparams(config.hype_parameters, {'h_param/bleu': valid_bleu})
                 tb_logger.close()
             if 'clear_ml' in config.logger:
                 exp_tracking_logger.close()
@@ -273,20 +274,23 @@ def run(config, hype_params=None):
     config.src_vocab, _, config.tgt_vocab = load_vocab(config.data_dir, config.is_split)
 
     logger = setup_logger(name='AST Transformer Training', distributed_rank=idist.get_rank())
+    logger.info('Hype-Params: ' + params2str(hype_params))
 
+    config.task_name = config.task_name + params2str(hype_params)
+    config.output_path = Path('./outputs/' + config.project_name + '/' + config.task_name)
     config.output_path_str = config.output_path.as_posix()
     if not config.is_test:
         if config.multi_gpu:
             with idist.Parallel(backend="nccl", master_port=2224) as parallel:
                 try:
-                    parallel.run(training, config, logger=logger, hype_params=hype_params)
+                    parallel.run(training, config, logger=logger)
                 except KeyboardInterrupt:
                     logger.info("Catched KeyboardInterrupt -> exit")
                 except Exception as e:  # noqa
                     logger.exception("")
                     raise e
         else:
-            training(0, config, logger=logger, hype_params=hype_params)
+            training(0, config, logger=logger)
     else:
         test(0, config, logger=logger)
 
