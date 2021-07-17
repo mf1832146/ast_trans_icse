@@ -25,10 +25,10 @@ hype_parameters = {
     'pos_type': 'p2q_p2k_p2v',  # ['', 'p2q_p2k', 'p2q_p2k_p2v']
     'par_heads': 4,   # [0,8]
     'max_rel_pos': 5,  # [1, 3, 5, 7]
-    'num_layers': 4,  # [2, 4, 6]
+    'num_layers': 6,  # [2, 4, 6]
     'data_dir': '../data_set/processed/py',  # java, py
     'is_split': True,  # need split
-    'is_test': True
+    'is_test': False
 }
 
 
