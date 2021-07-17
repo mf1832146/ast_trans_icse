@@ -18,6 +18,7 @@ max_src_len = 200
 data_type = 'ast'
 
 is_split = True
+is_test = False
 
 # model
 hype_parameters = {
@@ -26,7 +27,8 @@ hype_parameters = {
     'max_rel_pos': 5,  # [1, 3, 5, 7]
     'num_layers': 4,  # [2, 4, 6]
     'data_dir': '../data_set/processed/py',  # java, py
-    'is_split': True  # need split
+    'is_split': True,  # need split
+    'is_test': True
 }
 
 
