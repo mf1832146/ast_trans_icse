@@ -5,6 +5,7 @@ import math
 from torch.autograd import Variable
 import torch.nn.functional as F
 from torch.nn import Parameter
+from torch.nn.init import xavier_uniform_
 from torch.nn.modules.transformer import _get_activation_fn
 
 __all__ = ['_get_clones', 'FeedForward', 'Embeddings',
@@ -237,13 +238,17 @@ class Generator(nn.Module):
         self.linear = nn.Linear(hidden_size, tgt_vocab_size)
         self.share_emb_weights = share_emb_weights
         if share_emb_weights is not None:
-            self.bias = Parameter(torch.empty(tgt_vocab_size))
+            self.bias = Parameter(torch.zeros(tgt_vocab_size), requires_grad=True)
         else:
             self.linear = nn.Linear(hidden_size, tgt_vocab_size)
 
+    def _reset_parameters(self):
+        if self.share_emb_weights is not None:
+            xavier_uniform_(self.bias)
+
     def forward(self, outputs):
         if self.share_emb_weights is not None:
-            out = F.linear(outputs, self.weight.t(), self.bias)
+            out = F.linear(outputs, self.share_emb_weights.t(), self.bias)
         else:
             out = self.linear(outputs)
 
