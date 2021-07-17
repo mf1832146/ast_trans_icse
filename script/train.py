@@ -219,6 +219,7 @@ def test(local_rank, config, logger):
             checkpoint = torch.load(load_epoch_path, map_location='cpu')
         config.checkpoint = checkpoint
         model = get_model(config)
+        model.eval()
         model = model.to(config.device)
         greedy_generator = GreedyGenerator(model, config.max_tgt_len, multi_gpu=False)
         # metrics_test = {'total': TotalMetric(output_path=config.output_path.as_posix())}
@@ -238,6 +239,7 @@ def test(local_rank, config, logger):
         # bleu, rougle_l, meteor = states.metrics['total']
         _hypothesises = []
         _references = []
+
         for batch in tqdm(test_loader):
             x, y = _graph_prepare_batch(batch, device=config.device)
             y_pred = greedy_generator(x)
