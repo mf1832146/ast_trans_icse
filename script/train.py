@@ -271,7 +271,7 @@ def run(config, hype_params=None):
     logger = setup_logger(name='AST Transformer Training', distributed_rank=idist.get_rank())
 
     config.output_path_str = config.output_path.as_posix()
-    if config.is_test:
+    if not config.is_test:
         if config.multi_gpu:
             with idist.Parallel(backend="nccl", master_port=2224) as parallel:
                 try:
