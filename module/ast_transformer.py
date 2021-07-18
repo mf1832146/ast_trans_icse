@@ -125,9 +125,11 @@ class FastASTEncoder(nn.Module):
 
     def concat_pos(self, rel_par_pos, rel_bro_pos):
         if self.par_heads == 0:
-            return rel_bro_pos.unsqueeze(1)
+            return rel_bro_pos.unsqueeze(1).repeat_interleave(repeats=self.par_heads,
+                                                              dim=1)
         if self.bro_heads == 0:
-            return rel_par_pos.unsqueeze(1)
+            return rel_par_pos.unsqueeze(1).repeat_interleave(repeats=self.par_heads,
+                                                              dim=1)
 
         rel_par_pos = rel_par_pos.unsqueeze(1).repeat_interleave(repeats=self.par_heads,
                                                                  dim=1)

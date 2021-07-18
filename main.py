@@ -31,7 +31,7 @@ if __name__ == '__main__':
         optimize(parameters=config.hype_parameters,
                  evaluation_function=lambda params: run(config, params),
                  objective_name='bleu')
-        # run(config, config.hype_parameters)
+        #run(config, config.hype_parameters)
     else:
         run(config)
 
