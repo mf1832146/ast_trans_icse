@@ -63,7 +63,7 @@ reg_scale = 3e-5
 # criterion
 criterion = LabelSmoothing(padding_idx=PAD, smoothing=0.1)
 
-g = '0, 1, 2, 3'
+g = '0'
 
 if g != '':
     os.environ['CUDA_VISIBLE_DEVICES'] = g

@@ -32,8 +32,7 @@ class FastASTTrans(nn.Module):
 
         decoder_layer = DecoderLayer(hidden_size, self.num_heads, dim_feed_forward, dropout, activation="gelu")
         self.decoder = BaseDecoder(decoder_layer, num_layers, norm=nn.LayerNorm(hidden_size))
-        self.generator = Generator(tgt_vocab_size, hidden_size, dropout,
-                                   share_emb_weights=self.tgt_embedding.word_embeddings.weight)
+        self.generator = Generator(tgt_vocab_size, hidden_size, dropout)
 
         print('Init or load model.')
         if state_dict is None:
