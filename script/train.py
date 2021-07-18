@@ -263,7 +263,7 @@ def test(local_rank, config, logger):
                 'rouge': ind_rouge[i]
             })
 
-        file_name = "/predict_results_bleu_{:.2f}_rouge_{:.2f}_meteor_{:.2f}.json".format((bleu, rougle_l, meteor))
+        file_name = "/predict_results_bleu_{:.2f}_rouge_{:.2f}_meteor_{:.2f}.json".format(bleu, rougle_l, meteor)
         with open(config.output_path.as_posix() + file_name, 'w') as f:
             json.dump(outputs, f)
         logger.info(f"bleu: {bleu}, rouge: {rougle_l} meteor: {meteor}")

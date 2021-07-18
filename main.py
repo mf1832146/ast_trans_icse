@@ -30,7 +30,7 @@ if __name__ == '__main__':
             {
                 "name": "num_layers",
                 "type": "choice",
-                "values": [2, 4, 6]
+                "values": [4]
             }
         ]
         optimize(parameters=config.hype_parameters,
