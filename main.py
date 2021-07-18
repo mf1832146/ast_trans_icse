@@ -26,11 +26,6 @@ if __name__ == '__main__':
                 "name": "par_heads",
                 "type": "range",
                 "bounds": [0, 8]
-            },
-            {
-                "name": "num_layers",
-                "type": "choice",
-                "values": [2, 4, 6]
             }
         ]
         optimize(parameters=config.hype_parameters,
