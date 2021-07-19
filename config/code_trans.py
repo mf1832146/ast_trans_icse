@@ -28,7 +28,7 @@ is_ignore = True
 dropout = 0.2
 
 # train
-batch_size = 64
+batch_size = 32
 num_epochs = 500
 num_threads = 2
 config_filepath = Path('./config/code_trans.py')
