@@ -1,14 +1,12 @@
 import torch
 import torch.nn as nn
-
-from dataset import make_std_mask
 from module import Embeddings, _get_clones, FastRelEmbeddings, FeedForward, SublayerConnection
+from module.base_seq2seq import BaseTrans
 from module.components import DecoderLayer, BaseDecoder, Generator, process_data
 from module.attn import FastMultiHeadedAttention
-from utils import PAD
 
 
-class FastASTTrans(nn.Module):
+class FastASTTrans(BaseTrans):
     def __init__(self, src_vocab_size, tgt_vocab_size, hidden_size, par_heads, num_heads,
                  max_rel_pos, pos_type, num_layers, dim_feed_forward, dropout, state_dict=None):
         super(FastASTTrans, self).__init__()
@@ -41,38 +39,6 @@ class FastASTTrans(nn.Module):
                     nn.init.xavier_uniform_(p)
         else:
             self.load_state_dict(state_dict)
-
-    def forward(self, data):
-        process_data(data)
-
-        src_seq = data.src_seq
-        tgt_seq = data.tgt_seq
-
-        src_mask = src_seq.eq(PAD)
-        tgt_mask = make_std_mask(tgt_seq, PAD)
-
-        src_emb = self.src_embedding(src_seq)
-        tgt_emb = self.tgt_embedding(tgt_seq)
-
-        data.src_emb = src_emb
-        encoder_outputs = self.encode(data)
-        decoder_outputs, attn_weights = self.decode(tgt_emb, encoder_outputs, tgt_mask, src_mask)
-
-        out = self.generator(decoder_outputs)
-
-        return out
-
-    def encode(self, data):
-        return self.encoder(data)
-
-    def decode(self, tgt_emb, encoder_outputs, tgt_mask, src_mask):
-        tgt_emb = tgt_emb.permute(1, 0, 2)
-        encoder_outputs = encoder_outputs.permute(1, 0, 2)
-        tgt_mask = tgt_mask.repeat(self.num_heads, 1, 1)
-        outputs, attn_weights = self.decoder(tgt=tgt_emb, memory=encoder_outputs,
-                                             tgt_mask=tgt_mask, memory_key_padding_mask=src_mask)
-        outputs = outputs.permute(1, 0, 2)
-        return outputs, attn_weights
 
 
 class FastASTEncoder(nn.Module):

@@ -23,8 +23,8 @@ is_test = False
 # model
 hype_parameters = {
     'pos_type': 'p2q_p2k_p2v',  # ['', 'p2q_p2k', 'p2q_p2k_p2v']
-    'par_heads': 4,   # [0,8]
-    'max_rel_pos': 5,  # [1, 3, 5, 7]
+    'par_heads': 8,   # [0,8]
+    'max_rel_pos': 1,  # [1, 3, 5, 7]
     'num_layers': 6,  # [2, 4, 6]
     'data_dir': '../data_set/processed/py',  # java, py
     'is_split': True,  # need split
@@ -56,9 +56,8 @@ fast_mod = False
 logger = ['tensorboard', 'clear_ml']
 
 # optimizer
-optimizer = 'Adam'
-learning_rate = 0.056
-reg_scale = 3e-5
+learning_rate = 1e-3
+warmup = 0.01
 
 # criterion
 criterion = LabelSmoothing(padding_idx=PAD, smoothing=0.1)

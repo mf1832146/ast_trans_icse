@@ -14,7 +14,7 @@ import os
 from tqdm import tqdm
 from config import get_model
 from dataset import get_data_set
-from module.greedy_generator import GreedyGenerator
+from module import GreedyGenerator
 from utils import load_vocab
 from valid_metrices.bleu_metrice import BLEU4, bleu_output_transform, TotalMetric
 
@@ -42,10 +42,8 @@ def params2str(params):
 def initialize(config, train_data_set_len):
     model = get_model(config)
     model = model.to(config.device)
-    if 'Adam' == config.optimizer:
-        # optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate, weight_decay=config.reg_scale)
-        t_total = math.ceil(train_data_set_len / config.batch_size) * config.num_epochs
-        optimizer = BertAdam(model.parameters(), lr=1e-3, warmup=0.01, t_total=t_total)
+    t_total = math.ceil(train_data_set_len / config.batch_size) * config.num_epochs
+    optimizer = BertAdam(model.parameters(), lr=config.learning_rate, warmup=config.warmup, t_total=t_total)
     if config.multi_gpu:
         model = idist.auto_model(model)
         optimizer = idist.auto_optim(optimizer)

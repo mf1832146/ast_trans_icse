@@ -11,7 +11,7 @@ from torch.nn.modules.transformer import _get_activation_fn
 __all__ = ['_get_clones', 'FeedForward', 'Embeddings',
            'build_relative_position', 'transpose_for_scores', 'SublayerConnection',
            'c2p_dynamic_expand', 'p2c_dynamic_expand', 'pos_dynamic_expand',
-           'FastRelEmbeddings', 'RobertaRelEmbeddings', 'DecoderLayer', 'BaseDecoder', 'Generator', 'process_data']
+           'FastRelEmbeddings', 'DebertaRelEmbeddings', 'DecoderLayer', 'BaseDecoder', 'Generator', 'process_data']
 
 
 def _get_clones(module, N):
@@ -176,9 +176,9 @@ class RelEmbeddings(nn.Module):
             return None
 
 
-class RobertaRelEmbeddings(RelEmbeddings):
+class DebertaRelEmbeddings(RelEmbeddings):
     def __init__(self, d_model, num_heads, k, pos_type, dropout=0.0):
-        super(RobertaRelEmbeddings, self).__init__(d_model, num_heads, k, pos_type, dropout)
+        super(DebertaRelEmbeddings, self).__init__(d_model, num_heads, k, pos_type, dropout)
 
     def forward(self, inputs):
         rel_q, rel_k, rel_v = None, None, None
