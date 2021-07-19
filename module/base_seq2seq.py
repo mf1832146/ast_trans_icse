@@ -25,6 +25,9 @@ class BaseTrans(nn.Module):
             data.tgt_mask = make_std_mask(tgt_seq, PAD)
             data.tgt_emb = self.tgt_embedding(tgt_seq)
 
+    def process_data(self, data):
+        self.base_process(data)
+
     def forward(self, data):
         self.process_data(data)
 

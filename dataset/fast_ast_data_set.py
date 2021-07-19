@@ -11,7 +11,7 @@ class FastASTDataSet(BaseASTDataSet):
     def __init__(self, config, data_set_name):
         print('Data Set Name : < Fast AST Data Set >')
         super(FastASTDataSet, self).__init__(config, data_set_name)
-        #self.data_set_len = 500
+        self.data_set_len = 500
         self.edges_data = self.convert_ast_to_edges()
 
     def convert_ast_to_edges(self):
