@@ -26,6 +26,11 @@ if __name__ == '__main__':
                 "name": "par_heads",
                 "type": "range",
                 "bounds": [0, 8]
+            },
+            {
+                "name": "pos_type",
+                "type": "choice",
+                "values": ['', 'p2q_p2k', 'p2q_p2k_p2v']
             }
         ]
         optimize(parameters=config.hype_parameters,

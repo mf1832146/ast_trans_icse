@@ -231,27 +231,14 @@ def transpose_for_scores(x, num_heads):
 
 
 class Generator(nn.Module):
-    def __init__(self, tgt_vocab_size, hidden_size, dropout, share_emb_weights=None):
+    def __init__(self, tgt_vocab_size, hidden_size, dropout):
         super(Generator, self).__init__()
         self.soft_max = nn.Softmax(-1)
         self.dropout = nn.Dropout(dropout)
         self.linear = nn.Linear(hidden_size, tgt_vocab_size)
-        self.share_emb_weights = share_emb_weights
-        if share_emb_weights is not None:
-            self.bias = Parameter(torch.zeros(tgt_vocab_size), requires_grad=True)
-        else:
-            self.linear = nn.Linear(hidden_size, tgt_vocab_size)
-
-    def _reset_parameters(self):
-        if self.share_emb_weights is not None:
-            xavier_uniform_(self.bias)
 
     def forward(self, outputs):
-        if self.share_emb_weights is not None:
-            out = F.linear(outputs, self.share_emb_weights.t(), self.bias)
-        else:
-            out = self.linear(outputs)
-
+        out = self.linear(outputs)
         gen_prob = self.soft_max(self.dropout(out))
         return torch.log(gen_prob)
 

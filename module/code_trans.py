@@ -6,10 +6,13 @@ from module.attn.deberta_attn import DisentangledSelfAttention
 from module.base_seq2seq import BaseTrans
 
 
-class BaseTrans(BaseTrans):
+__all__ = ['CodeTrans']
+
+
+class CodeTrans(BaseTrans):
     def __init__(self, src_vocab_size, tgt_vocab_size, hidden_size, num_heads,
                  max_rel_pos, pos_type, num_layers, dim_feed_forward, dropout, state_dict=None):
-        super(BaseTrans, self).__init__()
+        super(CodeTrans, self).__init__()
         self.num_heads = num_heads
 
         self.pos_type = pos_type.split('_')
@@ -39,9 +42,6 @@ class BaseTrans(BaseTrans):
                     nn.init.xavier_uniform_(p)
         else:
             self.load_state_dict(state_dict)
-
-    def process_data(self, data):
-        self.base_process()
 
 
 class RobertaEncoder(nn.Module):
