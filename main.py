@@ -20,7 +20,8 @@ if __name__ == '__main__':
             {
                 "name": "max_rel_pos",
                 "type": "choice",
-                "values": [1, 3, 5, 7]
+                "values": [1, 3, 5, 7],
+                "value_type": "int"
             },
             {
                 "name": "par_heads",
