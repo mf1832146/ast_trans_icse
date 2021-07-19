@@ -65,9 +65,8 @@ class GreedyGenerator(nn.Module):
         self.unk_pos = UNK
 
     def forward(self, data):
-
         data.tgt_seq = None
-        self.process_data(data)
+        self.model.process_data(data)
 
         encoder_outputs = self.model.encode(data)
 
