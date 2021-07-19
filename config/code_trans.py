@@ -6,8 +6,8 @@ from module.code_trans import CodeTrans
 from utils import LabelSmoothing, PAD
 
 use_clearml = True
-project_name = 'code_trans'
-task_name = 'input_with_code'
+project_name = 'baselines'
+task_name = 'code_trans'
 is_split = True  # only action when data_type in ['sbt', 'pot']
 is_test = False
 

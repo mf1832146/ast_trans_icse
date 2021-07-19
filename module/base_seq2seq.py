@@ -80,6 +80,6 @@ class GreedyGenerator(nn.Module):
             out = out[:, -1, :]
             _, next_word = torch.max(out, dim=1)
             ys = torch.cat([ys,
-                            next_word.unsqueeze(1).type_as(decoder_outputs.data)], dim=1)
+                            next_word.unsqueeze(1).type_as(encoder_outputs.data)], dim=1)
 
         return ys[:, 1:]
