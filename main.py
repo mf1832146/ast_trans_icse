@@ -32,7 +32,8 @@ if __name__ == '__main__':
             {
                 "name": "pos_type",
                 "type": "choice",
-                "values": ['', 'p2q_p2k', 'p2q_p2k_p2v']
+                "values": ['', 'p2q_p2k', 'p2q_p2k_p2v'],
+                "value_type": "str"
             }
         ]
         optimize(parameters=config.hype_parameters,

@@ -36,9 +36,9 @@ class BaseASTDataSet(data.Dataset):
         ast_path = data_dir + 'split_pot.seq' if config.is_split else 'un_split_sbt.seq'
         matrices_path = data_dir + 'split_matrices.npz' if config.is_split else 'un_split_matrices.npz'
 
-        self.ast_data = self.load_ast(ast_path)
-        self.nl_data = self.load_nl(data_dir + 'nl.original')
-        self.matrices_data = self.load_matrices(matrices_path)
+        self.ast_data = load_ast(ast_path)
+        self.nl_data = load_nl(data_dir + 'nl.original')
+        self.matrices_data = load_matrices(matrices_path)
 
         self.data_set_len = len(self.ast_data)
         self.src_vocab = config.src_vocab
@@ -54,45 +54,45 @@ class BaseASTDataSet(data.Dataset):
     def __getitem__(self, index) -> T_co:
         pass
 
-    @staticmethod
-    def word2tensor(seq, max_seq_len, vocab):
-        seq_vec = [vocab.w2i[x] if x in vocab.w2i else UNK for x in seq]
-        seq_vec = seq_vec + [PAD for i in range(max_seq_len - len(seq_vec))]
-        seq_vec = torch.tensor(seq_vec, dtype=torch.long)
-        return seq_vec
-
     def convert_ast_to_tensor(self, ast_seq):
         ast_seq = ast_seq[:self.max_src_len]
-        return self.word2tensor(ast_seq, self.max_src_len, self.src_vocab)
+        return word2tensor(ast_seq, self.max_src_len, self.src_vocab)
 
     def convert_nl_to_tensor(self, nl):
         nl = nl[:self.max_tgt_len - 2]
         nl = ['<s>'] + nl + ['</s>']
-        return self.word2tensor(nl, self.max_tgt_len, self.tgt_vocab)
+        return word2tensor(nl, self.max_tgt_len, self.tgt_vocab)
 
-    @staticmethod
-    def load_ast(file_path):
-        _data = []
-        print('loading asts...')
-        with open(file_path, 'r') as f:
-            for line in tqdm(f.readlines()):
-                _data.append(eval(line))
-        return _data
 
-    @staticmethod
-    def load_matrices(file_path):
-        print('loading matrices...')
-        matrices = np.load(file_path, allow_pickle=True)
-        return matrices
+def word2tensor(seq, max_seq_len, vocab):
+    seq_vec = [vocab.w2i[x] if x in vocab.w2i else UNK for x in seq]
+    seq_vec = seq_vec + [PAD for i in range(max_seq_len - len(seq_vec))]
+    seq_vec = torch.tensor(seq_vec, dtype=torch.long)
+    return seq_vec
 
-    @staticmethod
-    def load_nl(file_path):
-        data_ = []
-        print('loading nls...')
-        with open(file_path, 'r') as f:
-            for line in tqdm(f.readlines()):
-                data_.append(line.split())
-        return data_
+
+def load_ast(file_path):
+    _data = []
+    print('loading asts...')
+    with open(file_path, 'r') as f:
+        for line in tqdm(f.readlines()):
+            _data.append(eval(line))
+    return _data
+
+
+def load_matrices(file_path):
+    print('loading matrices...')
+    matrices = np.load(file_path, allow_pickle=True)
+    return matrices
+
+
+def load_nl(file_path):
+    data_ = []
+    print('loading nls...')
+    with open(file_path, 'r') as f:
+        for line in tqdm(f.readlines()):
+            data_.append(line.split())
+    return data_
 
 
 def clean_nl(s):

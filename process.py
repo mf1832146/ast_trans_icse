@@ -42,7 +42,6 @@ def skip_code_and_nl_with_skip_id(data_dir, output_dir, is_skipped):
 
     with open(output_dir + 'code.seq', 'w') as f:
         for index, code in tqdm(enumerate(codes), desc='skip code'):
-            code = code + '\n' if index < data_size-1 else code
             f.write(code)
 
 
