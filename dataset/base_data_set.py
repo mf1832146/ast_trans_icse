@@ -1,3 +1,5 @@
+import random
+
 import torch
 import numpy as np
 import torch.utils.data as data
@@ -12,7 +14,98 @@ from utils import PAD, UNK
 from torch.utils.data.dataset import T_co
 punc = string.punctuation
 
-__all__ = ['BaseASTDataSet', 'BaseCodeDataSet', 'clean_nl', 'subsequent_mask', 'make_std_mask']
+__all__ = ['BaseASTDataSet', 'BaseCodeDataSet', 'PathDataSet', 'clean_nl', 'subsequent_mask', 'make_std_mask']
+
+
+class PathDataSet(data.Dataset):
+    def __init__(self, config, data_set_name):
+        super(PathDataSet, self).__init__()
+        self.data_set_name = data_set_name
+        print('loading ' + data_set_name + ' data...')
+        data_dir = config.data_dir + '/' + data_set_name + '/'
+        self.max_src_len = config.max_src_len
+        self.max_tgt_len = config.max_tgt_len
+        self.max_token_len = config.max_token_len
+        self.max_path_len = config.max_path_len
+        self.src_vocab = config.src_vocab
+        self.tgt_vocab = config.tgt_vocab
+        self.collector = Collater([], [])
+
+        src_path = data_dir + 'paths.seq'
+        path_data = load_seq(src_path)
+        nl_data = load_seq(data_dir + 'nl.original')
+
+        # self.data_set_len = len(nl_data)
+        self.data_set_len = 40
+
+        self.items = self.collect_data(path_data, nl_data)
+
+    def __len__(self):
+        return self.data_set_len
+
+    def __getitem__(self, index):
+        return self.items[index], self.items[index].target
+
+    def collect_data(self, path_data, nl_data):
+        items = []
+        for i in tqdm(range(self.data_set_len)):
+            start_vec_list = torch.zeros((self.max_src_len, self.max_token_len))
+            end_vec_list = torch.zeros((self.max_src_len, self.max_token_len))
+            path_vec_list = torch.zeros((self.max_src_len, self.max_path_len))
+
+            paths = path_data[i]
+            nl = nl_data[i]
+
+            paths = paths[0].split(';')
+
+            random.shuffle(paths)
+            paths = paths[:self.max_src_len]
+
+            for j, path in enumerate(paths):
+                tokens = [p.split('|') for p in path.split(',')]
+                start_tokens, path_nodes, end_tokens = [], [], []
+                if len(tokens) == 1:
+                    path_nodes = tokens[0]
+                elif len(tokens) == 2:
+                    if tokens[0][0].startswith('SimpleName'):
+                        end_tokens = tokens[1]
+                        path_nodes = tokens[0]
+                    else:
+                        start_tokens = tokens[0]
+                        path_nodes = tokens[1]
+                elif len(tokens) == 3:
+                    start_tokens = tokens[0]
+                    path_nodes = tokens[1]
+                    end_tokens = tokens[2]
+                else:
+                    raise Exception('Unexpect tokens length, expect length <= 3.')
+                start_vec = self.convert_path_to_tensor(start_tokens, self.max_token_len)
+                path_vec = self.convert_path_to_tensor(path_nodes, self.max_path_len)
+                end_vec = self.convert_path_to_tensor(end_tokens, self.max_token_len)
+
+                start_vec_list[j] = start_vec
+                end_vec_list[j] = end_vec
+                path_vec_list[j] = path_vec
+
+            nl_vec = self.convert_nl_to_tensor(nl)
+
+            d = Data(start_vec=start_vec_list,
+                     end_vec=end_vec_list,
+                     path_vec=path_vec_list,
+                     tgt_seq=nl_vec[:-1],
+                     target=nl_vec[1:])
+
+            items.append(d)
+        return items
+
+    def convert_path_to_tensor(self, token_seq, max_len):
+        token_seq = token_seq[:max_len]
+        return word2tensor(token_seq, max_len, self.src_vocab)
+
+    def convert_nl_to_tensor(self, nl):
+        nl = nl[:self.max_tgt_len - 2]
+        nl = ['<s>'] + nl + ['</s>']
+        return word2tensor(nl, self.max_tgt_len, self.tgt_vocab)
 
 
 class BaseCodeDataSet(data.Dataset):
@@ -21,6 +114,7 @@ class BaseCodeDataSet(data.Dataset):
         self.data_set_name = data_set_name
         print('loading ' + data_set_name + ' data...')
         data_dir = config.data_dir + '/' + data_set_name + '/'
+        self.max_token_len = config.max_token_len
         self.max_src_len = config.max_src_len
         self.max_tgt_len = config.max_tgt_len
         self.src_vocab = config.src_vocab

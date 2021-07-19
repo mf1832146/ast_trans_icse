@@ -6,7 +6,7 @@ from module.attn.deberta_attn import DisentangledSelfAttention
 from module.base_seq2seq import BaseTrans
 
 
-__all__ = ['CodeTrans']
+__all__ = ['CodeTrans', 'RobertaEncoder', 'RobertaEncoderLayer']
 
 
 class CodeTrans(BaseTrans):

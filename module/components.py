@@ -10,7 +10,7 @@ from torch.nn.modules.transformer import _get_activation_fn
 
 __all__ = ['_get_clones', 'FeedForward', 'Embeddings',
            'build_relative_position', 'transpose_for_scores', 'SublayerConnection',
-           'c2p_dynamic_expand', 'p2c_dynamic_expand', 'pos_dynamic_expand',
+           'c2p_dynamic_expand', 'p2c_dynamic_expand', 'pos_dynamic_expand', 'PositionalEncoding',
            'FastRelEmbeddings', 'DebertaRelEmbeddings', 'DecoderLayer', 'BaseDecoder', 'Generator', 'process_data']
 
 

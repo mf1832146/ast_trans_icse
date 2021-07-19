@@ -248,10 +248,12 @@ class PathExtract:
             connector = '|'.join(ast[v]['type'] for v in connector)
 
             context = f'{start},{connector},{finish}'
+            if context == '':
+                continue
             contexts.append(context)
 
         if len(contexts) == 0:
-            return ''
+            return None
 
         context = ';'.join(contexts)
         if len(context.split(';')) != len(contexts):

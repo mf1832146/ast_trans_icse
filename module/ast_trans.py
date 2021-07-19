@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from module import Embeddings, _get_clones, FastRelEmbeddings, FeedForward, SublayerConnection
 from module.base_seq2seq import BaseTrans
-from module.components import DecoderLayer, BaseDecoder, Generator, process_data
+from module.components import DecoderLayer, BaseDecoder, Generator
 from module.attn import FastMultiHeadedAttention
 
 
