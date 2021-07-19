@@ -5,20 +5,77 @@ import re
 import wordninja
 import string
 from torch.autograd import Variable
+from torch_geometric.data import Data
 from torch_geometric.data.dataloader import Collater
 from tqdm import tqdm
 from utils import PAD, UNK
 from torch.utils.data.dataset import T_co
 punc = string.punctuation
 
-__all__ = ['BaseASTDataSet', 'clean_nl', 'subsequent_mask', 'make_std_mask', 'get_data_set']
+__all__ = ['BaseASTDataSet', 'BaseCodeDataSet', 'clean_nl', 'subsequent_mask', 'make_std_mask']
 
 
-def get_data_set(config):
-    train_data_set = config.data_set(config, 'train')
-    eval_data_set = config.data_set(config, 'dev')
+class BaseCodeDataSet(data.Dataset):
+    def __init__(self, config, data_set_name):
+        super(BaseCodeDataSet, self).__init__()
+        self.data_set_name = data_set_name
+        print('loading ' + data_set_name + ' data...')
+        data_dir = config.data_dir + '/' + data_set_name + '/'
+        self.max_src_len = config.max_src_len
+        self.max_tgt_len = config.max_tgt_len
+        self.src_vocab = config.src_vocab
+        self.tgt_vocab = config.tgt_vocab
+        self.collector = Collater([], [])
 
-    return train_data_set, eval_data_set
+        if config.data_type == 'code':
+            src_path = data_dir + 'code.seq'
+        elif config.data_type == 'pot':
+            src_path = data_dir + 'split_pot.seq' if config.is_split else 'un_split_pot.seq'
+        elif config.data_type == 'sbt':
+            src_path = data_dir + 'split_sbt.seq' if config.is_split else 'un_split_sbt.seq'
+
+        if config.data_type == 'code':
+            code_data = load_seq(src_path)
+        else:
+            code_data = load_list(src_path)
+        nl_data = load_seq(data_dir + 'nl.original')
+
+        self.items = self.collect_data(code_data, nl_data)
+        self.data_set_len = len(self.items)
+
+    def collect_data(self, code_data, nl_data):
+        items = []
+        for i in tqdm(range(len(code_data))):
+            code_seq = code_data[i]
+            nl = nl_data[i]
+
+            ast_vec = self.convert_code_to_tensor(code_seq)
+            nl_vec = self.convert_nl_to_tensor(nl)
+
+            d = Data(src_seq=ast_vec,
+                     tgt_seq=nl_vec[:-1],
+                     target=nl_vec[1:])
+
+            items.append(d)
+        return items
+
+    def collect_fn(self, batch):
+        return self.collector.collate(batch)
+
+    def __len__(self):
+        return self.data_set_len
+
+    def __getitem__(self, index):
+        pass
+
+    def convert_code_to_tensor(self, code_seq):
+        code_seq = code_seq[:self.max_src_len]
+        return word2tensor(code_seq, self.max_src_len, self.src_vocab)
+
+    def convert_nl_to_tensor(self, nl):
+        nl = nl[:self.max_tgt_len - 2]
+        nl = ['<s>'] + nl + ['</s>']
+        return word2tensor(nl, self.max_tgt_len, self.tgt_vocab)
 
 
 class BaseASTDataSet(data.Dataset):
@@ -33,11 +90,11 @@ class BaseASTDataSet(data.Dataset):
         self.max_src_len = config.max_src_len
         self.max_tgt_len = config.max_tgt_len
 
-        ast_path = data_dir + 'split_pot.seq' if config.is_split else 'un_split_sbt.seq'
+        ast_path = data_dir + 'split_pot.seq' if config.is_split else 'un_split_pot.seq'
         matrices_path = data_dir + 'split_matrices.npz' if config.is_split else 'un_split_matrices.npz'
 
-        self.ast_data = load_ast(ast_path)
-        self.nl_data = load_nl(data_dir + 'nl.original')
+        self.ast_data = load_list(ast_path)
+        self.nl_data = load_seq(data_dir + 'nl.original')
         self.matrices_data = load_matrices(matrices_path)
 
         self.data_set_len = len(self.ast_data)
@@ -71,28 +128,28 @@ def word2tensor(seq, max_seq_len, vocab):
     return seq_vec
 
 
-def load_ast(file_path):
+def load_list(file_path):
     _data = []
-    print('loading asts...')
+    print(f'loading {file_path}...')
     with open(file_path, 'r') as f:
         for line in tqdm(f.readlines()):
             _data.append(eval(line))
     return _data
 
 
-def load_matrices(file_path):
-    print('loading matrices...')
-    matrices = np.load(file_path, allow_pickle=True)
-    return matrices
-
-
-def load_nl(file_path):
+def load_seq(file_path):
     data_ = []
-    print('loading nls...')
+    print(f'loading {file_path} ...')
     with open(file_path, 'r') as f:
         for line in tqdm(f.readlines()):
             data_.append(line.split())
     return data_
+
+
+def load_matrices(file_path):
+    print('loading matrices...')
+    matrices = np.load(file_path, allow_pickle=True)
+    return matrices
 
 
 def clean_nl(s):

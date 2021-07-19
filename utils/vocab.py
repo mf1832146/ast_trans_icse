@@ -76,17 +76,19 @@ class Vocab(object):
         self.i2w = {v: k for k, v in self.w2i.items()}
 
 
-def load_vocab(data_dir, is_split):
+def load_vocab(data_dir, is_split, data_type):
     log.info(f'load vocab from {data_dir}, is_split = {is_split}')
     split_str = 'split_ast_vocab.pkl' if is_split else 'un_split_ast_vocab.pkl'
-    ast_vocab = Vocab(need_bos=False,
-                      file_path=data_dir + '/vocab/' + split_str)
-    ast_vocab.load()
-    code_vocab = Vocab(need_bos=False, file_path=data_dir + '/vocab/' + 'code_vocab.pkl')
-    code_vocab.load()
+    if data_type in ['sbt', 'path', 'pot']:
+        src_vocab = Vocab(need_bos=False,
+                          file_path=data_dir + '/vocab/' + split_str)
+        src_vocab.load()
+    elif data_type in ['code']:
+        src_vocab = Vocab(need_bos=False, file_path=data_dir + '/vocab/' + 'code_vocab.pkl')
+        src_vocab.load()
     nl_vocab = Vocab(need_bos=True, file_path=data_dir + '/vocab/' + 'nl_vocab.pkl')
     nl_vocab.load()
-    return ast_vocab, code_vocab, nl_vocab
+    return src_vocab, nl_vocab
 
 
 def create_vocab(data_dir):

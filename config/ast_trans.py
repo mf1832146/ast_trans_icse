@@ -13,7 +13,7 @@ seed = 2021
 data_dir = '../data_set/processed/java'
 max_tgt_len = 30
 max_src_len = 150
-data_type = 'ast'
+data_type = 'pot'
 
 is_split = True
 is_test = False

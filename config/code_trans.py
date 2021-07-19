@@ -1,9 +1,14 @@
+import os
 from pathlib import Path
 
+from dataset import BaseCodeDataSet
+from module.code_trans import CodeTrans
+from utils import LabelSmoothing, PAD
 
 use_clearml = True
 project_name = 'code_trans'
 task_name = 'input_with_code'
+is_split = True  # only action when data_type in ['sbt', 'pot']
 is_test = False
 
 seed = 2021
@@ -11,7 +16,7 @@ seed = 2021
 data_dir = '../data_set/processed/java'
 max_tgt_len = 30
 max_src_len = 150
-data_type = 'ast'
+data_type = 'code'
 
 num_heads = 8
 pos_type = 'p2q_p2k_p2v'
@@ -26,12 +31,12 @@ dropout = 0.2
 batch_size = 64
 num_epochs = 500
 num_threads = 2
-config_filepath = Path('./config/ast_trans.py')
+config_filepath = Path('./config/code_trans.py')
 es_patience = 20
 load_epoch_path = ''
 val_interval = 5
-data_set = FastASTDataSet
-model = FastASTTrans
+data_set = BaseCodeDataSet
+model = CodeTrans
 fast_mod = False
 logger = ['tensorboard', 'clear_ml']
 

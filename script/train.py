@@ -13,10 +13,9 @@ from torch.utils.data import DataLoader
 import os
 from tqdm import tqdm
 from config import get_model
-from dataset import get_data_set
 from module import GreedyGenerator
 from utils import load_vocab
-from valid_metrices.bleu_metrice import BLEU4, bleu_output_transform, TotalMetric
+from valid_metrices.bleu_metrice import BLEU4, bleu_output_transform
 
 __all__ = ['run']
 
@@ -57,16 +56,9 @@ def log_metrics(logger, epoch, elapsed, tag, metrics):
 
 
 def get_dataflow(config):
-    # if idist.get_local_rank() > 0:
-    #     idist.barrier()
-
-    train_dataset, valid_dataset = get_data_set(config)
-
-    # if idist.get_local_rank() == 0:
-    #     # Ensure that only local rank 0 download the dataset
-    #     idist.barrier()
-
-    return train_dataset, valid_dataset
+    train_data_set = config.data_set(config, 'train')
+    eval_data_set = config.data_set(config, 'dev')
+    return train_data_set, eval_data_set
 
 
 def get_data_loader(config, is_train, data_set):
@@ -271,7 +263,7 @@ def run(config, hype_params=None):
     if hype_params is not None:
         config.__internal_config_object_data_dict__.update(hype_params)
 
-    config.src_vocab, _, config.tgt_vocab = load_vocab(config.data_dir, config.is_split)
+    config.src_vocab, config.tgt_vocab = load_vocab(config.data_dir, config.is_split, config.data_type)
 
     logger = setup_logger(name='AST Transformer Training', distributed_rank=idist.get_rank())
     logger.info('Hype-Params: ' + params2str(hype_params))
