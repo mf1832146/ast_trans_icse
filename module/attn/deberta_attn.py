@@ -57,6 +57,8 @@ class DisentangledSelfAttention(nn.Module):
         scores = scores / (scale_factor * math.sqrt(per_head))
         if mask is not None:
             # 给需要mask的地方设置一个负无穷（因为接下来要输入到softmax层，如果是0还是会有影响）
+            if mask.dim() == 2:
+                mask = mask.unsqueeze(1).unsqueeze(1)
             scores = scores.masked_fill(mask, -1e9)
 
         p_attn = F.softmax(scores, dim=-1)  # [batch_size, num_heads, len, len]
@@ -66,7 +68,9 @@ class DisentangledSelfAttention(nn.Module):
         context = torch.matmul(p_attn, v)  # [batch_size ,num_head, node_len, node_len]
         if rel_v is not None:
             # relative_v shape [batch_size, node_len, node_len, dim]
-            rel_v = transpose_for_scores(rel_v, self.h)
+            new_x_shape = rel_v.size()[:-1] + (num_heads, -1)
+            rel_v = rel_v.view(*new_x_shape)
+            rel_v = rel_v.permute(0, 3, 1, 2, 4)
             v_attn = p_attn.unsqueeze(-2)
             context_v = torch.matmul(v_attn, rel_v).squeeze(-2)
             context += context_v

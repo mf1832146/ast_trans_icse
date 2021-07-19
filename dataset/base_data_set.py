@@ -41,7 +41,8 @@ class BaseCodeDataSet(data.Dataset):
         nl_data = load_seq(data_dir + 'nl.original')
 
         self.items = self.collect_data(code_data, nl_data)
-        self.data_set_len = len(self.items)
+        #  self.data_set_len = len(self.items)
+        self.data_set_len = 40
 
     def collect_data(self, code_data, nl_data):
         items = []
@@ -53,6 +54,7 @@ class BaseCodeDataSet(data.Dataset):
             nl_vec = self.convert_nl_to_tensor(nl)
 
             d = Data(src_seq=ast_vec,
+                     rel_pos=None,
                      tgt_seq=nl_vec[:-1],
                      target=nl_vec[1:])
 
@@ -66,7 +68,7 @@ class BaseCodeDataSet(data.Dataset):
         return self.data_set_len
 
     def __getitem__(self, index):
-        pass
+        return self.items[index], self.items[index].target
 
     def convert_code_to_tensor(self, code_seq):
         code_seq = code_seq[:self.max_src_len]

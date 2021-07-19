@@ -91,7 +91,8 @@ def training(local_rank, config=None, **kwargs):
             task = Task.init(project_name=config.project_name,
                              task_name=config.task_name)
             task.connect_configuration(config.config_filepath.as_posix())
-            exp_tracking.log_params(hype_params)
+            if hype_params is not None:
+                exp_tracking.log_params(hype_params)
 
     set_seed(config.seed + local_rank)
     train_data_set, eval_data_set = get_dataflow(config)

@@ -28,13 +28,13 @@ is_ignore = True
 dropout = 0.2
 
 # train
-batch_size = 64
+batch_size = 4
 num_epochs = 500
 num_threads = 2
 config_filepath = Path('./config/code_trans.py')
 es_patience = 20
 load_epoch_path = ''
-val_interval = 5
+val_interval = 1
 data_set = BaseCodeDataSet
 model = CodeTrans
 fast_mod = False
@@ -47,7 +47,7 @@ warmup = 0.01
 # criterion
 criterion = LabelSmoothing(padding_idx=PAD, smoothing=0.1)
 
-g = '0'
+g = '2'
 
 if g != '':
     os.environ['CUDA_VISIBLE_DEVICES'] = g
