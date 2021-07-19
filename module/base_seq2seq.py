@@ -71,7 +71,7 @@ class GreedyGenerator(nn.Module):
         encoder_outputs = self.model.encode(data)
 
         batch_size = encoder_outputs.size(0)
-        ys = torch.ones(batch_size, 1).fill_(self.start_pos).type_as(data.src_seq)
+        ys = torch.ones(batch_size, 1).fill_(self.start_pos).long().to(encoder_outputs.device)
         for i in range(self.max_tgt_len - 1):
             data.tgt_mask = make_std_mask(ys, 0)
             data.tgt_emb = self.model.tgt_embedding(Variable(ys))
@@ -80,6 +80,6 @@ class GreedyGenerator(nn.Module):
             out = out[:, -1, :]
             _, next_word = torch.max(out, dim=1)
             ys = torch.cat([ys,
-                            next_word.unsqueeze(1).type_as(data.src_seq)], dim=1)
+                            next_word.unsqueeze(1).long().to(encoder_outputs.device)], dim=1)
 
         return ys[:, 1:]

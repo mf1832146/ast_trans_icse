@@ -20,7 +20,7 @@ max_path_len = 9
 data_type = 'path'
 
 num_heads = 8
-pos_type = 'p2q_p2k_p2v'
+pos_type = ''
 max_rel_pos = 5
 num_layers = 4
 hidden_size = 256
@@ -35,7 +35,7 @@ num_threads = 2
 config_filepath = Path('./config/path_trans.py')
 es_patience = 5
 load_epoch_path = ''
-val_interval = 1
+val_interval = 5
 data_set = PathDataSet
 model = Code2SeqTrans
 fast_mod = False

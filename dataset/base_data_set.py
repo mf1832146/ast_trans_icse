@@ -35,8 +35,8 @@ class PathDataSet(data.Dataset):
         path_data = load_seq(src_path)
         nl_data = load_seq(data_dir + 'nl.original')
 
-        # self.data_set_len = len(nl_data)
-        self.data_set_len = 40
+        self.data_set_len = len(nl_data)
+        #self.data_set_len = 40
 
         self.items = self.collect_data(path_data, nl_data)
 
@@ -89,9 +89,9 @@ class PathDataSet(data.Dataset):
 
             nl_vec = self.convert_nl_to_tensor(nl)
 
-            d = Data(start_vec=start_vec_list,
-                     end_vec=end_vec_list,
-                     path_vec=path_vec_list,
+            d = Data(start_vec=start_vec_list.long(),
+                     end_vec=end_vec_list.long(),
+                     path_vec=path_vec_list.long(),
                      tgt_seq=nl_vec[:-1],
                      target=nl_vec[1:])
 
@@ -106,6 +106,9 @@ class PathDataSet(data.Dataset):
         nl = nl[:self.max_tgt_len - 2]
         nl = ['<s>'] + nl + ['</s>']
         return word2tensor(nl, self.max_tgt_len, self.tgt_vocab)
+
+    def collect_fn(self, batch):
+        return self.collector.collate(batch)
 
 
 class BaseCodeDataSet(data.Dataset):
