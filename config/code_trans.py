@@ -28,13 +28,13 @@ is_ignore = True
 dropout = 0.2
 
 # train
-batch_size = 4
+batch_size = 64
 num_epochs = 500
 num_threads = 2
 config_filepath = Path('./config/code_trans.py')
 es_patience = 20
 load_epoch_path = ''
-val_interval = 1
+val_interval = 5
 data_set = BaseCodeDataSet
 model = CodeTrans
 fast_mod = False

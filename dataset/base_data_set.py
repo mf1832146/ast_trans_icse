@@ -41,8 +41,8 @@ class BaseCodeDataSet(data.Dataset):
         nl_data = load_seq(data_dir + 'nl.original')
 
         self.items = self.collect_data(code_data, nl_data)
-        #  self.data_set_len = len(self.items)
-        self.data_set_len = 40
+        self.data_set_len = len(self.items)
+        # self.data_set_len = 40
 
     def collect_data(self, code_data, nl_data):
         items = []

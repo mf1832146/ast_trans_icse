@@ -11,6 +11,7 @@ if __name__ == '__main__':
     parser.add_argument("--config", type=Path, help="Input configuration file")
     parser.add_argument('--use_hype_params', action='store_true')
     parser.add_argument('--data_type', type=str, default='')
+    parser.add_argument('--g', type=str, default='')
     args = parser.parse_args()
 
     assert args.config is not None
@@ -46,6 +47,9 @@ if __name__ == '__main__':
         if args.data_type != '':
             config.data_type = args.data_type
             config.task_name += args.data_type
+        if args.g != '':
+            config.g = args.g
+            os.environ['CUDA_VISIBLE_DEVICES'] = config.g
         run(config)
 
 
