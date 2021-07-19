@@ -18,6 +18,19 @@ if __name__ == '__main__':
     assert args.config.exists()
 
     config = ConfigObject(args.config)
+
+    if args.g != '':
+        os.environ['CUDA_VISIBLE_DEVICES'] = args.g
+        config.device = "cuda"
+        if len(args.g.split(',')) > 1:
+            config.multi_gpu = True
+            config.batch_size = config.batch_size * len(args.g.split(','))
+        else:
+            config.multi_gpu = False
+    else:
+        config.device = 'cpu'
+        config.multi_gpu = False
+
     if args.use_hype_params:
         config.hype_parameters = [
             {
@@ -47,9 +60,6 @@ if __name__ == '__main__':
         if args.data_type != '':
             config.data_type = args.data_type
             config.task_name += args.data_type
-        if args.g != '':
-            config.g = args.g
-            os.environ['CUDA_VISIBLE_DEVICES'] = config.g
         run(config)
 
 

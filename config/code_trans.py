@@ -46,19 +46,4 @@ warmup = 0.01
 
 # criterion
 criterion = LabelSmoothing(padding_idx=PAD, smoothing=0.1)
-
-g = '2'
-
-if g != '':
-    os.environ['CUDA_VISIBLE_DEVICES'] = g
-    device = "cuda"
-    if len(g.split(',')) > 1:
-        multi_gpu = True
-        batch_size = batch_size * len(g.split(','))
-    else:
-        multi_gpu = False
-else:
-    device = 'cpu'
-    multi_gpu = False
-
 checkpoint = None
