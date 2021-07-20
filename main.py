@@ -43,7 +43,7 @@ if __name__ == '__main__':
             {
                 "name": "par_heads",
                 "type": "choice",
-                "bounds": [0, 2, 4, 6, 8],
+                "values": [0, 2, 4, 6, 8],
                 "value_type": "int"
             },
             {
