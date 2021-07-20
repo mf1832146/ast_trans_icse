@@ -117,7 +117,6 @@ class BaseCodeDataSet(data.Dataset):
         self.data_set_name = data_set_name
         print('loading ' + data_set_name + ' data...')
         data_dir = config.data_dir + '/' + data_set_name + '/'
-        self.max_token_len = config.max_token_len
         self.max_src_len = config.max_src_len
         self.max_tgt_len = config.max_tgt_len
         self.src_vocab = config.src_vocab
