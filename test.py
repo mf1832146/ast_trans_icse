@@ -1,8 +1,8 @@
 import torch
+import torch.nn.functional as F
+from torch_geometric.data import Data
 
-from module import build_relative_position
-
-a = build_relative_position(10, 10, 2, 'cpu')
-print(a.type())
-
+a = Data()
+a.c = 1
+print(a)
 

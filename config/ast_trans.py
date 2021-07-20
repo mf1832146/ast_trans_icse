@@ -42,12 +42,12 @@ dropout = 0.2
 
 # train
 batch_size = 64
-num_epochs = 500
+num_epochs = 2
 num_threads = 2
 config_filepath = Path('./config/ast_trans.py')
-es_patience = 5
+es_patience = 20
 load_epoch_path = ''
-val_interval = 5
+val_interval = 1
 data_set = FastASTDataSet
 model = FastASTTrans
 fast_mod = False

@@ -82,6 +82,7 @@ def get_data_loader(config, is_train, data_set):
 
 
 def training(local_rank, config=None, **kwargs):
+    torch.cuda.empty_cache()
     logger = kwargs['logger']
     hype_params = kwargs['hype_params']
     if idist.get_rank() == 0:
@@ -89,7 +90,7 @@ def training(local_rank, config=None, **kwargs):
             from clearml import Task
             from utils import exp_tracking
             task = Task.init(project_name=config.project_name,
-                             task_name=config.task_name)
+                             task_name=config.task_name + params2str(hype_params))
             task.connect_configuration(config.config_filepath.as_posix())
             if hype_params is not None:
                 exp_tracking.log_params(hype_params)
@@ -98,7 +99,7 @@ def training(local_rank, config=None, **kwargs):
     train_data_set, eval_data_set = get_dataflow(config)
     train_loader = get_data_loader(config, is_train=True, data_set=train_data_set)
     valid_loader = get_data_loader(config, is_train=False, data_set=eval_data_set)
-
+    checkpoint = None
     # Setup model, optimizer, criterion
     model, optimizer, criterion = initialize(config, train_data_set.__len__())
 
@@ -269,8 +270,7 @@ def run(config, hype_params=None):
     logger = setup_logger(name='AST Transformer Training', distributed_rank=idist.get_rank())
     logger.info('Hype-Params: ' + params2str(hype_params))
 
-    config.task_name = config.task_name + params2str(hype_params)
-    config.output_path = Path('./outputs/' + config.project_name + '/' + config.task_name)
+    config.output_path = Path('./outputs/' + config.project_name + '/' + config.task_name + params2str(hype_params))
     config.output_path_str = config.output_path.as_posix()
     if not config.is_test:
         if config.multi_gpu:
