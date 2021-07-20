@@ -99,7 +99,7 @@ def training(local_rank, config=None, **kwargs):
     train_data_set, eval_data_set = get_dataflow(config)
     train_loader = get_data_loader(config, is_train=True, data_set=train_data_set)
     valid_loader = get_data_loader(config, is_train=False, data_set=eval_data_set)
-    checkpoint = None
+    config.checkpoint = None
     # Setup model, optimizer, criterion
     model, optimizer, criterion = initialize(config, train_data_set.__len__())
 
