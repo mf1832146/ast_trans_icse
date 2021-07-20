@@ -59,9 +59,10 @@ class RobertaEncoder(nn.Module):
         output = data.src_emb
         src_mask = data.src_mask
         seq_length = output.size(1)
+        rel_pos = None
         if hasattr(data, 'rel_pos'):
             rel_pos = data.rel_pos
-        else:
+        if rel_pos is None:
             rel_pos = build_relative_position(seq_length, seq_length, self.max_rel_pos, output.device)
         rel_q, rel_k, rel_v = self.rel_emb(rel_pos)
 
