@@ -22,6 +22,7 @@ if __name__ == '__main__':
     if args.g != '':
         os.environ['CUDA_VISIBLE_DEVICES'] = args.g
         config.device = "cuda"
+        config.g = args.g
         if len(args.g.split(',')) > 1:
             config.multi_gpu = True
             config.batch_size = config.batch_size * len(args.g.split(','))
