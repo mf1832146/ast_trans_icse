@@ -12,10 +12,9 @@ class FastASTDataSet(BaseASTDataSet):
         print('Data Set Name : < Fast AST Data Set >')
         super(FastASTDataSet, self).__init__(config, data_set_name)
         #self.data_set_len = 50
-        self.edges_data = self.convert_ast_to_edges()
-
         self.max_par_rel_pos = config.max_par_rel_pos
         self.max_bro_rel_pos = config.max_bro_rel_pos
+        self.edges_data = self.convert_ast_to_edges()
 
     def convert_ast_to_edges(self):
         print('building edges.')
