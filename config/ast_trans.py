@@ -32,8 +32,10 @@ hype_parameters = {
 
 num_heads = 8
 pos_type = ''
-par_heads = 4
+par_heads = 0
 max_rel_pos = 3
+max_par_rel_pos = 3
+max_bro_rel_pos = 3
 num_layers = 4
 hidden_size = 256
 dim_feed_forward = 2048
@@ -42,7 +44,7 @@ dropout = 0.2
 
 # train
 batch_size = 64
-num_epochs = 2
+num_epochs = 200
 num_threads = 0
 config_filepath = Path('./config/ast_trans.py')
 es_patience = 20

@@ -189,6 +189,7 @@ def training(local_rank, config=None, **kwargs):
                 tb_logger.writer.add_hparams(hype_params, {'hparam/test_accuracy': valid_bleu})
                 tb_logger.close()
             if 'clear_ml' in config.logger:
+                exp_tracking_logger.writer.add_hparams(hype_params, {'hparam/test_accuracy': valid_bleu})
                 exp_tracking_logger.close()
 
 
@@ -264,6 +265,7 @@ def test(local_rank, config, logger):
 def run(config, hype_params=None):
     if hype_params is not None:
         config.__internal_config_object_data_dict__.update(hype_params)
+        config.max_rel_pos = max(config.max_par_rel_pos, config.max_bro_rel_pos)
 
     config.src_vocab, config.tgt_vocab = load_vocab(config.data_dir, config.is_split, config.data_type)
 

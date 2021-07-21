@@ -35,7 +35,13 @@ if __name__ == '__main__':
     if args.use_hype_params:
         config.hype_parameters = [
             {
-                "name": "max_rel_pos",
+                "name": "max_par_rel_pos",
+                "type": "choice",
+                "values": [1, 3, 5, 7],
+                "value_type": "int"
+            },
+            {
+                "name": "max_bro_rel_pos",
                 "type": "choice",
                 "values": [1, 3, 5, 7],
                 "value_type": "int"
@@ -45,13 +51,14 @@ if __name__ == '__main__':
                 "type": "choice",
                 "values": [0, 2, 4, 6, 8],
                 "value_type": "int"
-            },
-            {
-                "name": "pos_type",
-                "type": "choice",
-                "values": ['', 'p2q_p2k', 'p2q_p2k_p2v'],
-                "value_type": "str"
-            }
+             }
+            # ,
+            # {
+            #     "name": "pos_type",
+            #     "type": "choice",
+            #     "values": ['', 'p2q_p2k', 'p2q_p2k_p2v'],
+            #     "value_type": "str"
+            # }
         ]
         optimize(parameters=config.hype_parameters,
                  evaluation_function=lambda params: run(config, params),

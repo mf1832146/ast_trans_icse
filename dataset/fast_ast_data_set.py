@@ -11,8 +11,11 @@ class FastASTDataSet(BaseASTDataSet):
     def __init__(self, config, data_set_name):
         print('Data Set Name : < Fast AST Data Set >')
         super(FastASTDataSet, self).__init__(config, data_set_name)
-        # self.data_set_len = 50
+        #self.data_set_len = 50
         self.edges_data = self.convert_ast_to_edges()
+
+        self.max_par_rel_pos = config.max_par_rel_pos
+        self.max_bro_rel_pos = config.max_bro_rel_pos
 
     def convert_ast_to_edges(self):
         print('building edges.')
@@ -22,15 +25,19 @@ class FastASTDataSet(BaseASTDataSet):
 
         edges_data = []
 
-        def edge2list(edges):
+        def edge2list(edges, edge_type):
+            if edge_type == 'par':
+                max_rel_pos = self.max_par_rel_pos
+            if edge_type == 'bro':
+                max_rel_pos = self.max_bro_rel_pos
             ast_len = min(len(edges), self.max_src_len)
             start_node = -1 * torch.ones((self.max_rel_pos + 1, self.max_src_len), dtype=torch.long)
             for key in edges.keys():
                 if key[0] < self.max_src_len and key[1] < self.max_src_len:
                     value = edges.get(key)
-                    if value > self.max_rel_pos and self.ignore_more_than_k:
+                    if value > max_rel_pos and self.ignore_more_than_k:
                         continue
-                    value = min(value, self.max_rel_pos)
+                    value = min(value, max_rel_pos)
                     start_node[value][key[1]] = key[0]
 
             start_node[0][:ast_len] = torch.arange(ast_len)
@@ -42,8 +49,8 @@ class FastASTDataSet(BaseASTDataSet):
             ast_seq = self.ast_data[i]
             nl = self.nl_data[i]
 
-            par_edge_list = edge2list(par_edges)
-            bro_edge_list = edge2list(bro_edges)
+            par_edge_list = edge2list(par_edges, 'par')
+            bro_edge_list = edge2list(bro_edges, 'bro')
 
             ast_vec = self.convert_ast_to_tensor(ast_seq)
             nl_vec = self.convert_nl_to_tensor(nl)
