@@ -60,9 +60,9 @@ if __name__ == '__main__':
             #     "value_type": "str"
             # }
         ]
-        optimize(parameters=config.hype_parameters,
-                 evaluation_function=lambda params: run(config, params),
-                 objective_name='bleu')
+        # optimize(parameters=config.hype_parameters,
+        #          evaluation_function=lambda params: run(config, params),
+        #          objective_name='bleu')
         config.hype_parameters = {
             'max_par_rel_pos': 1,
             'max_bro_rel_pos': 1,
