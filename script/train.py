@@ -189,7 +189,6 @@ def training(local_rank, config=None, **kwargs):
                 tb_logger.writer.add_hparams(hype_params, {'hparam/test_accuracy': valid_bleu})
                 tb_logger.close()
             if 'clear_ml' in config.logger:
-                exp_tracking_logger.writer.add_hparams(hype_params, {'hparam/test_accuracy': valid_bleu})
                 exp_tracking_logger.close()
 
 

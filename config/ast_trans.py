@@ -31,11 +31,12 @@ hype_parameters = {
 
 
 num_heads = 8
-pos_type = ''
+pos_type = 'p2q_p2k_p2v'
+
 par_heads = 0
-max_rel_pos = 3
-max_par_rel_pos = 3
-max_bro_rel_pos = 3
+max_rel_pos = 7
+max_par_rel_pos = 7
+max_bro_rel_pos = 7
 num_layers = 4
 hidden_size = 256
 dim_feed_forward = 2048
