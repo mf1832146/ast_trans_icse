@@ -302,12 +302,7 @@ def test(local_rank, config, logger):
 def run(config, hype_params=None):
     if hype_params is not None:
         config.__internal_config_object_data_dict__.update(hype_params)
-        if 0 < config.par_heads < config.num_heads:
-            config.max_rel_pos = max(config.max_par_rel_pos, config.max_bro_rel_pos)
-        elif 0 == config.par_heads:
-            config.max_rel_pos = config.max_bro_rel_pos
-        else:
-            config.max_rel_pos = config.max_par_rel_pos
+        config.max_rel_pos = max(config.max_par_rel_pos, config.max_bro_rel_pos)
 
     config.src_vocab, config.tgt_vocab = load_vocab(config.data_dir, config.is_split, config.data_type)
 
