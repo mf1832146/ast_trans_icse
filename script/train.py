@@ -78,7 +78,7 @@ def create_custom_trainer(
         y_pred = model(x)
         loss = loss_fn(y_pred, y)
         loss.backward()
-        torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
+        # torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
         optimizer.step()
         scheduler.step()
         return output_transform(x, y, y_pred, loss)
