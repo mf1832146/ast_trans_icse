@@ -58,7 +58,7 @@ logger = ['tensorboard', 'clear_ml']
 
 # optimizer
 learning_rate = 1e-3
-warmup = 0.01
+warmup = 2000
 
 # criterion
 criterion = LabelSmoothing(padding_idx=PAD, smoothing=0.1)

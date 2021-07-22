@@ -1,20 +1,24 @@
+from typing import Union, Callable, Optional, Sequence, Any, Tuple
+
 import ignite.distributed as idist
 import math
 import torch.optim
 from ignite.contrib.handlers import ProgressBar
-from ignite.engine import create_supervised_trainer, create_supervised_evaluator, Events
+from ignite.engine import create_supervised_evaluator, Events, _prepare_batch, Engine, \
+    DeterministicEngine
 from ignite.utils import setup_logger, convert_tensor
 from ignite.contrib.engines import common
 import json
 from py_config_runner.utils import set_seed
 from pathlib import Path
-from pytorch_pretrained_bert import BertAdam
+from torch.optim import AdamW
+from torch.optim.lr_scheduler import LambdaLR
 from torch.utils.data import DataLoader
 import os
 from tqdm import tqdm
 from config import get_model
 from module import GreedyGenerator
-from utils import load_vocab
+from utils import load_vocab, get_linear_schedule_with_warmup
 from valid_metrices.bleu_metrice import BLEU4, bleu_output_transform
 
 __all__ = ['run']
@@ -42,12 +46,45 @@ def initialize(config, train_data_set_len):
     model = get_model(config)
     model = model.to(config.device)
     t_total = math.ceil(train_data_set_len / config.batch_size) * config.num_epochs
-    optimizer = BertAdam(model.parameters(), lr=config.learning_rate, warmup=config.warmup, t_total=t_total)
+    optimizer = AdamW(model.parameters(), lr=config.learning_rate)
+    scheduler = get_linear_schedule_with_warmup(optimizer,
+                                                num_warmup_steps=config.warmup
+                                                ,num_training_steps=t_total)  # PyTorch scheduler
     if config.multi_gpu:
         model = idist.auto_model(model)
         optimizer = idist.auto_optim(optimizer)
     criterion = config.criterion
-    return model, optimizer, criterion
+    return model, optimizer, criterion, scheduler
+
+
+def create_custom_trainer(
+    model: torch.nn.Module,
+    optimizer: torch.optim.Optimizer,
+    scheduler: LambdaLR,
+    max_grad_norm: float,
+    loss_fn: Union[Callable, torch.nn.Module],
+    device: Optional[Union[str, torch.device]] = None,
+    non_blocking: bool = False,
+    prepare_batch: Callable = _prepare_batch,
+    output_transform: Callable = lambda x, y, y_pred, loss: loss.item(),
+    deterministic: bool = False,
+) -> Engine:
+
+    def _update(engine: Engine, batch: Sequence[torch.Tensor]) -> Union[Any, Tuple[torch.Tensor]]:
+        model.train()
+        optimizer.zero_grad()
+        x, y = prepare_batch(batch, device=device, non_blocking=non_blocking)
+        y_pred = model(x)
+        loss = loss_fn(y_pred, y)
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
+        optimizer.step()
+        scheduler.step()
+        return output_transform(x, y, y_pred, loss)
+
+    trainer = Engine(_update) if not deterministic else DeterministicEngine(_update)
+
+    return trainer
 
 
 def log_metrics(logger, epoch, elapsed, tag, metrics):
@@ -101,10 +138,10 @@ def training(local_rank, config=None, **kwargs):
     valid_loader = get_data_loader(config, is_train=False, data_set=eval_data_set)
     config.checkpoint = None
     # Setup model, optimizer, criterion
-    model, optimizer, criterion = initialize(config, train_data_set.__len__())
+    model, optimizer, criterion, scheduler = initialize(config, train_data_set.__len__())
 
-    trainer = create_supervised_trainer(model, optimizer, criterion, config.device,
-                                        prepare_batch=_graph_prepare_batch)
+    trainer = create_custom_trainer(model, optimizer, scheduler,max_grad_norm=1.0,
+                                    loss_fn=criterion, device=config.device, prepare_batch=_graph_prepare_batch)
     metrics_valid = {'bleu': BLEU4()}
     greedy_generator = GreedyGenerator(model, config.max_tgt_len, multi_gpu=config.multi_gpu)
     evaluator = create_supervised_evaluator(greedy_generator, metrics=metrics_valid, device=config.device,
