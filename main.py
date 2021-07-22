@@ -37,13 +37,13 @@ if __name__ == '__main__':
             {
                 "name": "max_par_rel_pos",
                 "type": "choice",
-                "values": [1, 3, 5, 7],
+                "values": [1, 5, 10],
                 "value_type": "int"
             },
             {
                 "name": "max_bro_rel_pos",
                 "type": "choice",
-                "values": [1, 3, 5, 7],
+                "values": [1, 3],
                 "value_type": "int"
             },
             {
@@ -63,7 +63,12 @@ if __name__ == '__main__':
         optimize(parameters=config.hype_parameters,
                  evaluation_function=lambda params: run(config, params),
                  objective_name='bleu')
-        #run(config, config.hype_parameters)
+        config.hype_parameters = {
+            'max_par_rel_pos': 1,
+            'max_bro_rel_pos': 1,
+            'par_heads': 4
+        }
+        run(config, config.hype_parameters)
     else:
         if args.data_type != '':
             config.data_type = args.data_type
