@@ -43,7 +43,7 @@ if __name__ == '__main__':
             {
                 "name": "max_bro_rel_pos",
                 "type": "choice",
-                "values": [1, 3],
+                "values": [1, 3, 5],
                 "value_type": "int"
             },
             {
