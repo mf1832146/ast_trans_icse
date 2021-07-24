@@ -18,7 +18,7 @@ if __name__ == '__main__':
     assert args.config.exists()
 
     config = ConfigObject(args.config)
-
+    print(1)
     if args.g != '':
         os.environ['CUDA_VISIBLE_DEVICES'] = args.g
         config.device = "cuda"
@@ -64,8 +64,8 @@ if __name__ == '__main__':
         #          evaluation_function=lambda params: run(config, params),
         #          objective_name='bleu')
         config.hype_parameters = {
-            'max_par_rel_pos': 1,
-            'max_bro_rel_pos': 1,
+            'max_par_rel_pos': 5,
+            'max_bro_rel_pos': 5,
             'par_heads': 4
         }
         run(config, config.hype_parameters)
