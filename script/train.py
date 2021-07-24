@@ -11,6 +11,8 @@ from ignite.contrib.engines import common
 import json
 from py_config_runner.utils import set_seed
 from pathlib import Path
+
+from pytorch_pretrained_bert import BertAdam
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import LambdaLR
 from torch.utils.data import DataLoader
@@ -50,6 +52,8 @@ def initialize(config, train_data_set_len):
     # scheduler = get_linear_schedule_with_warmup(optimizer,
     #                                             num_warmup_steps=config.warmup
     #                                             ,num_training_steps=t_total)  # PyTorch scheduler
+    if config.test_optimizer:
+        optimizer = BertAdam(model.parameters(), lr=1e-3, warmup=0.01, t_total=t_total)
     scheduler = None
     if config.multi_gpu:
         model = idist.auto_model(model)
