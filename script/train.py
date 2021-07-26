@@ -14,7 +14,7 @@ from py_config_runner import get_params
 from py_config_runner.utils import set_seed
 from pathlib import Path
 
-from pytorch_pretrained_bert.optimization import WarmupLinearSchedule
+from pytorch_pretrained_bert.optimization import WarmupLinearSchedule, BertAdam
 from torch.optim.lr_scheduler import LambdaLR
 from torch.utils.data import DataLoader
 import os
@@ -51,13 +51,12 @@ def initialize(config, train_data_set_len):
     model = model.to(config.device)
     t_total = math.ceil(train_data_set_len / config.batch_size) * config.num_epochs
     warm_steps = int(t_total * config.warmup)
-    optimizer = AdamW(model.parameters(), lr=config.learning_rate, correct_bias=False)
-    scheduler = get_linear_schedule_with_warmup(optimizer,
-                                                num_warmup_steps=warm_steps,
-                                                num_training_steps=t_total)
-    # if config.test_optimizer:
-    #     optimizer = BertAdam(model.parameters(), lr=1e-3, warmup=0.01, t_total=t_total)
-    # scheduler = None
+    # optimizer = AdamW(model.parameters(), lr=config.learning_rate, correct_bias=False)
+    # scheduler = get_linear_schedule_with_warmup(optimizer,
+    #                                             num_warmup_steps=warm_steps,
+    #                                             num_training_steps=t_total)
+    optimizer = BertAdam(model.parameters(), lr=config.learning_rate, warmup=config.warmup, t_total=t_total)
+    scheduler = None
     if config.multi_gpu:
         model = idist.auto_model(model)
         optimizer = idist.auto_optim(optimizer)
@@ -85,9 +84,9 @@ def create_custom_trainer(
         y_pred = model(x)
         loss = loss_fn(y_pred, y)
         loss.backward()
-        torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
+        # torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
         optimizer.step()
-        scheduler.step()
+        # scheduler.step()
         return output_transform(x, y, y_pred, loss)
 
     trainer = Engine(_update) if not deterministic else DeterministicEngine(_update)
@@ -180,7 +179,7 @@ def training(local_rank, config=None, **kwargs):
         tag='val'
     )
 
-    common.add_early_stopping_by_val_score(patience=4,
+    common.add_early_stopping_by_val_score(patience=config.es_patience,
                                            evaluator=evaluator,
                                            trainer=trainer,
                                            metric_name='bleu')
