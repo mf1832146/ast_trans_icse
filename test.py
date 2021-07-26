@@ -80,9 +80,9 @@ if __name__ == '__main__':
             results_z[cur_k].append(bro_num[cur_k])
 
     for cur_k in range(1, k):
-        ax0.plot(results_x[cur_k], results_y[cur_k], label='par_k={}'.format(cur_k+1))
-        ax1.plot(results_x[cur_k], results_z[cur_k], label='bro_k={}'.format(cur_k + 1))
+        ax0.plot(results_x[cur_k], results_y[cur_k], label='p={}'.format(cur_k+1))
+        ax1.plot(results_x[cur_k], results_z[cur_k], label='p={}'.format(cur_k + 1))
 
-    ax0.legend()
+    #ax0.legend()
     ax1.legend()
     plt.show()

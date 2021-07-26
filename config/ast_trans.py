@@ -1,8 +1,24 @@
 from pathlib import Path
+
+from py_config_runner import TrainvalConfigSchema, Schema
+
 from dataset.fast_ast_data_set import FastASTDataSet
 from module import FastASTTrans
-import os
 from utils import LabelSmoothing, PAD
+
+
+class ASTTransSchema(Schema):
+    num_heads: int
+    pos_type: str
+    max_tgt_len: int
+    max_src_len: int
+    is_split: bool
+    par_heads: int
+    max_rel_pos: int
+    max_par_rel_pos: int
+    max_bro_rel_pos: int
+    num_layers: int
+
 
 use_clearml = True
 project_name = 'ast_trans_fast'
@@ -13,7 +29,7 @@ seed = 2021
 # data
 data_dir = '../data_set/processed/java'
 max_tgt_len = 30
-max_src_len = 150
+max_src_len = 200
 data_type = 'pot'
 
 is_split = True
@@ -45,7 +61,7 @@ is_ignore = True
 dropout = 0.2
 
 # train
-batch_size = 64
+batch_size = 32
 num_epochs = 500
 num_threads = 2
 config_filepath = Path('./config/ast_trans.py')
@@ -59,11 +75,11 @@ logger = ['tensorboard', 'clear_ml']
 
 # optimizer
 learning_rate = 1e-3
-warmup = 2000
+warmup = 0.01
 
 # criterion
 criterion = LabelSmoothing(padding_idx=PAD, smoothing=0.1)
-
+schema = ASTTransSchema
 g = '0'
 # src_vocab, _, tgt_vocab = load_vocab(data_dir, is_split)
 #

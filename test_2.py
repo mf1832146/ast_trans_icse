@@ -4,7 +4,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 from dataset.base_data_set import load_matrices
 
-data_dir = '../data_set/processed/py/train/'
+data_dir = '../data_set/processed/java/train/'
 matrices_path = data_dir + 'split_matrices.npz'
 matrices_data = load_matrices(matrices_path)
 
