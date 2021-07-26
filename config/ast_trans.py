@@ -61,7 +61,7 @@ is_ignore = True
 dropout = 0.2
 
 # train
-batch_size = 64
+batch_size = 32
 num_epochs = 500
 num_threads = 0
 config_filepath = Path('./config/ast_trans.py')
@@ -78,7 +78,7 @@ learning_rate = 1e-3
 warmup = 0.01
 
 # criterion
-criterion = LabelSmoothing(padding_idx=PAD, smoothing=0.1)
+criterion = LabelSmoothing(padding_idx=PAD, smoothing=0)
 schema = ASTTransSchema
 g = '0'
 # src_vocab, _, tgt_vocab = load_vocab(data_dir, is_split)
