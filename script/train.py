@@ -14,15 +14,14 @@ from py_config_runner import get_params
 from py_config_runner.utils import set_seed
 from pathlib import Path
 
-from pytorch_pretrained_bert import BertAdam
 from pytorch_pretrained_bert.optimization import WarmupLinearSchedule
-from torch.optim import AdamW
 from torch.optim.lr_scheduler import LambdaLR
 from torch.utils.data import DataLoader
 import os
 from tqdm import tqdm
 from config import get_model
 from module import GreedyGenerator
+from script.optimizer import AdamW
 from utils import load_vocab, get_linear_schedule_with_warmup
 from valid_metrices.bleu_metrice import BLEU4, bleu_output_transform
 
@@ -53,7 +52,9 @@ def initialize(config, train_data_set_len):
     t_total = math.ceil(train_data_set_len / config.batch_size) * config.num_epochs
     warm_steps = int(t_total * config.warmup)
     optimizer = AdamW(model.parameters(), lr=config.learning_rate, correct_bias=False)
-    scheduler = WarmupLinearSchedule(optimizer, warmup_steps=warm_steps, t_total=t_total)
+    scheduler = get_linear_schedule_with_warmup(optimizer,
+                                                num_warmup_steps=warm_steps,
+                                                num_training_steps=t_total)
     # if config.test_optimizer:
     #     optimizer = BertAdam(model.parameters(), lr=1e-3, warmup=0.01, t_total=t_total)
     # scheduler = None
