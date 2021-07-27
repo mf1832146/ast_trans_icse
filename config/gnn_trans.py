@@ -20,7 +20,6 @@ class GNNSchema(Schema):
 
 use_clearml = True
 project_name = 'baselines'
-task_name = 'gnn'
 test_optimizer = True
 
 seed = 2021
@@ -30,6 +29,8 @@ max_tgt_len = 30
 max_src_len = 200
 max_rel_pos = 1
 gnn_type = 'gnn_trans'  # ['gcn', 'gat', 'gnn_trans']
+
+task_name = 'gnn' + '_' + gnn_type
 data_type = 'gnn'
 
 is_split = True
