@@ -261,6 +261,7 @@ def clean_nl(s):
             processed_words.extend(wordninja.split(w))
         else:
             processed_words.append(w)
+    processed_words.append('.')
     return processed_words
 
 
