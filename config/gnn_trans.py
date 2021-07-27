@@ -3,26 +3,24 @@ from pathlib import Path
 from py_config_runner import Schema
 
 from dataset.fast_ast_data_set import FastASTDataSet
+from dataset.graph_data_set import GraphDataSet
 from module import FastASTTrans
+from module.gnn_trans import GNNTrans
 from utils import LabelSmoothing, PAD
 
 
-class ASTTransSchema(Schema):
+class GNNSchema(Schema):
     num_heads: int
-    pos_type: str
     max_tgt_len: int
     max_src_len: int
+    gnn_type: str
     is_split: bool
-    par_heads: int
-    max_rel_pos: int
-    max_par_rel_pos: int
-    max_bro_rel_pos: int
     num_layers: int
 
 
 use_clearml = True
-project_name = 'ast_trans_fast'
-task_name = 'ast_trans_fast_test_bleu'
+project_name = 'baselines'
+task_name = 'gnn'
 test_optimizer = True
 
 seed = 2021
@@ -30,7 +28,9 @@ seed = 2021
 data_dir = '../data_set/processed/java'
 max_tgt_len = 30
 max_src_len = 200
-data_type = 'pot'
+max_rel_pos = 1
+gnn_type = 'gnn_trans'  # ['gcn', 'gat', 'gnn_trans']
+data_type = 'gnn'
 
 is_split = True
 is_test = False
@@ -48,12 +48,6 @@ hype_parameters = {
 
 
 num_heads = 8
-pos_type = 'p2q_p2k_p2v'
-
-par_heads = 0
-max_rel_pos = 7
-max_par_rel_pos = 7
-max_bro_rel_pos = 7
 num_layers = 4
 hidden_size = 256
 dim_feed_forward = 2048
@@ -64,12 +58,12 @@ dropout = 0.2
 batch_size = 32
 num_epochs = 500
 num_threads = 0
-config_filepath = Path('./config/ast_trans.py')
+config_filepath = Path('./config/gnn_trans.py')
 es_patience = 20
 load_epoch_path = ''
 val_interval = 5
-data_set = FastASTDataSet
-model = FastASTTrans
+data_set = GraphDataSet
+model = GNNTrans
 fast_mod = False
 logger = ['tensorboard', 'clear_ml']
 
@@ -79,22 +73,6 @@ warmup = 0.01
 
 # criterion
 criterion = LabelSmoothing(padding_idx=PAD, smoothing=0)
-schema = ASTTransSchema
+schema = GNNSchema
 g = '0'
-# src_vocab, _, tgt_vocab = load_vocab(data_dir, is_split)
-#
 checkpoint = None
-# if load_epoch_path != '':
-#     file_name = load_epoch_path
-#     if torch.cuda.is_available():
-#         checkpoint = torch.load(file_name)
-#     else:
-#         checkpoint = torch.load(file_name, map_location='cpu')
-
-
-
-
-
-
-
-

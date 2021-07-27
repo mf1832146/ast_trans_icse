@@ -79,7 +79,7 @@ class Vocab(object):
 def load_vocab(data_dir, is_split, data_type):
     log.info(f'load vocab from {data_dir}, is_split = {is_split}')
     split_str = 'split_ast_vocab.pkl' if is_split else 'un_split_ast_vocab.pkl'
-    if data_type in ['sbt', 'path', 'pot']:
+    if data_type in ['sbt', 'path', 'pot', 'gnn']:
         src_vocab = Vocab(need_bos=False,
                           file_path=data_dir + '/vocab/' + split_str)
         src_vocab.load()
