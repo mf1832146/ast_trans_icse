@@ -22,7 +22,7 @@ class ASTTransSchema(Schema):
 
 use_clearml = True
 project_name = 'ast_trans_fast'
-task_name = 'ast_trans_fast_test_bleu'
+task_name = 'ast_trans_fast'
 test_optimizer = True
 
 seed = 2021

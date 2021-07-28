@@ -252,6 +252,9 @@ def load_matrices(file_path):
 
 def clean_nl(s):
     s = s.strip()
+    if s[-1] == ".":
+        s = s[:-1]
+    s = s.split(". ")[0]
     s = re.sub("[<].+?[>]", "", s)
     s = re.sub("[\[\]\%]", "", s)
     s = s[0:1].lower() + s[1:]
@@ -261,7 +264,6 @@ def clean_nl(s):
             processed_words.extend(wordninja.split(w))
         else:
             processed_words.append(w)
-    processed_words.append('.')
     return processed_words
 
 
