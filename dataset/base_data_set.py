@@ -229,7 +229,7 @@ def word2tensor(seq, max_seq_len, vocab):
 def load_list(file_path):
     _data = []
     print(f'loading {file_path}...')
-    with open(file_path, 'r') as f:
+    with open(file_path, 'r', encoding='utf-8') as f:
         for line in tqdm(f.readlines()):
             _data.append(eval(line))
     return _data
@@ -238,7 +238,7 @@ def load_list(file_path):
 def load_seq(file_path):
     data_ = []
     print(f'loading {file_path} ...')
-    with open(file_path, 'r') as f:
+    with open(file_path, 'r', encoding='utf-8') as f:
         for line in tqdm(f.readlines()):
             data_.append(line.split())
     return data_
