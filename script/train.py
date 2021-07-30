@@ -310,6 +310,9 @@ def run(config, hype_params=None):
         config.__internal_config_object_data_dict__.update(hype_params)
         config.max_rel_pos = max(config.max_par_rel_pos, config.max_bro_rel_pos)
 
+    if config.fast_mod:
+        config.use_clearml = False
+
     config.src_vocab, config.tgt_vocab = load_vocab(config.data_dir, config.is_split, config.data_type)
 
     logger = setup_logger(name='AST Transformer Training', distributed_rank=idist.get_rank())
