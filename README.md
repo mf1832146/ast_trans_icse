@@ -45,6 +45,8 @@ If you want to load model on your specific path, just change the 'load_epoch_pat
 
 load_epoch_path = './checkpoint/'
 
+The prediction results are shown in [experiment_results](./experiment_results).
+
 
 ## 5. Algorithm
 The specific implementation of GDC is implemented in /module/attn/fast_attn.py.
