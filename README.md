@@ -50,4 +50,4 @@ load_epoch_path = './checkpoint/'
 The specific implementation of GDC is implemented in /module/attn/fast_attn.py.
 And for understanding, we show the algorithm of it as below.
 
-![algorithm of GDC](algorithm_pic.png)
+![algorithm of GDC](img.png)
