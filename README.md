@@ -35,6 +35,8 @@ python -u -m torch.distributed.launch --nproc_per_node=2 --use_env main.py --con
 you can change the config file to code_trans.py, gnn_trans.py, path_trans.py to run code_trans, gnn_trans or path_trans similarly.
 ![different metrices results on the valid dataset ](tensorboard_results.png)
 
+we default select the model with highest BLEU score on the valid dataset for testing. and you can change the select strategy with highest BLEU, highest ROUGE-L and highest METEOR by change the strategy in ./script/train.py.
+![different strategy on valid dataset](merices_results.jpg)
 
 ## 4. test
 For test, you can set the parameter 'is_test' to True.
